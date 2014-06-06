@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
+  <title>Bilibili Show Pages</title>
+  <meta name="keywords" content="bilibili, 哔哩哔哩, 弹幕, danmaku, 下载" />
+  <meta name="description" content="以 ASS 格式下载 bilibili 的弹幕" />
+  <style>
+    html, body { font-family: "Microsoft YaHei",Helvetica,Arial,sans-serif; font-size: 16px; font-weight: normal; line-height: 24px; margin: 0; padding: 0; }
+    body { background: #f0f0f0; padding-bottom: 40px; }
+    #main-body { width: 960px; margin: 0 auto; }
+    h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; font-size: 100%; font-weight: normal; }
+    a, a:hover, a:active, a:visited { text-decoration: none; color: #f25d8e; outline: none; }
+    a img { border: none; }
+    h1 { color: #D95E7F; font-size: 40px; line-height: 60px; margin: 40px 0 20px 0; padding: 0; font-weight: bold; }
+    header { display: block; height: 200px; }
+    header li { list-style: none; }
+    #intro { border: 2px solid #F25D8E; float: left; height: 120px; line-height: 40px; font-size: 20px; padding: 18px; background: #f8f8f8; border-radius: 8px; margin-left: 30px; color: #333; }
+    #intro strong { color: #000; font-weight: normal; }
+    #side-buttons { width: 400px; height: 160px; float: right; padding: 0; text-align: right; margin-right: 30px; }
+    #install { background: #F25D8E; color: #fff; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; display: block; float: right; text-align: center; }
+    #install:hover { background: #f32b6d; }
+    #report { float: right; width: 100%; height: 70px; padding: 20px 0 0; display: block; font-size: 16px; }
+    #report1, #report2 { height: 80px; width: 48%; display: block; }
+    #report1 { float: left; }
+    #report2 { float: right; }
+    #report a { width: 100%; background: #e1e1e1; display: block; height: 40px; line-height: 40px; color: #aaa; text-align: center; }
+    #report a:hover { background: #fdb4c8; color: #fff; }
+    #report span { width: 100%; text-align: center; display: block; line-height: 30px; color: #aaa; }
+    #install_instruct h3 { margin; }
+    h3 { font-size: 24px; font-weight: bold; border-bottom: 2px #ccc solid; padding: 10px 20px; margin: 20px 0 10px; }
+    h3::before { background: #f32b6d; content: ""; display: block; float: left; height: 20px; left: -20px; position: relative; width: 10px; }
+    .browser { width: 840px; padding: 10px 20px 10px 100px; position: relative; min-height: 100px; }
+    .browser-icon { position: absolute; left: 20px; top: 20px; }
+    .warning { color: red; font-weight: bold; }
+    .in { padding: 5px 2em; border: 4px; }
+    .p { margin: 0.5em 0; }
+    ul { margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="main-body">
+    <h1>bilibili ASS Danmaku Downloader</h1>
+    <header>
+      <div id="intro">
+        以 ASS 格式下载 bilibili 视频弹幕<br />
+        兼容使用 libass 的播放器<br />
+        当前为测试版，尚未彻底完工！
+      </div>
+      <div id="side-buttons">
+        <a id="install" href="bilibili_ASS_Danmaku_Downloader.user.js">安装脚本</a>
+        <div id="report">
+          <div id="report1">
+            <a href="https://github.com/tiansh/us-danmaku/issues" target="_blank">报告Bug</a>
+            <span>在github上报告错误</span>
+          </div>
+          <div id="report2">
+            <a href="http://member.bilibili.tv/#msg&amp;act=new&amp;mid=1378109" target="_blank">私信我</a>
+            <span>在bilibili上私信作者</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <h3>功能</h3>
+    <div class="in">
+      <div class="p">
+        下载 bilibili 弹幕<br />
+        当前为初始版本，可能各种问题。
+      </div>
+    </div>
+
+    <h3>浏览器兼容性</h3>
+    <div class="in">
+      <div class="p">
+        试过火狐，别的不知道
+      </div>
+    </div>
+
+    <h3>视频播放器兼容性</h3>
+    <div class="in">
+      <div class="p">
+        试过 SMPlayer ，别的不知道
+      </div>
+    </div>
+
+
+    <h3>权限与隐私</h3>
+    <div class="in">
+      <div class="p">
+        脚本使用了 GM_addStyle 接口用于添加样式显示下载弹幕的按钮。<br />
+        脚本使用了 GM_xmlhttpRequest 接口用于获取弹幕信息。（如果获取失败当前可能下载到空弹幕）<br />
+        脚本暂没有本地存储，也不会访问其他地址。后续版本可能会添加本地存储，到时再说。
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
