@@ -6,7 +6,7 @@
 // @include     /^http://bilibili\.kankanews\.com/video/.*$/
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.2alpha
+// @version     0.3beta
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -438,6 +438,7 @@ var getCid = function (callback) {
 var initButton = (function () {
   var done = false;
   return function () {
+    if (!document.querySelector('#assdown')) return;
     if (done) return; else done = true;
     GM_addStyle('#assdown { display: block !important; }');
     document.querySelector('#assdown').addEventListener('click', function (e) {
