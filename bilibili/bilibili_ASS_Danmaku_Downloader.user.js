@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name        bilibili ASS Danmaku Downloader
 // @namespace   https://github.com/tiansh
-// @description 下载bilibili上的ASS格式弹幕
+// @description 以 ASS 格式下载 bilibili 上的弹幕
 // @include     /^http://www\.bilibili\.tv/video/.*$/
 // @include     /^http://bilibili\.kankanews\.com/video/.*$/
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.1alpha
+// @version     0.2alpha
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -94,7 +94,7 @@ Style: Fix,Microsoft YaHei,25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000
 Style: R2L,Microsoft YaHei,25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000000,&H{{alpha}}000000,1,0,0,0,100,100,0,0,1,2,0,2,20,20,2,0
 
 [Events]
-Format: Layer, Start, End, Style, Text
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
   */}), config, info, {'alpha': hexAlpha(config.opacity) });
   // 补齐数字开头的0
@@ -149,7 +149,7 @@ Format: Layer, Start, End, Style, Text
   // 转义一些字符
   var escapeAssText = function (s) {
     // "{"、"}"字符libass可以转义，但是VSFilter不可以，所以直接用全角补上
-    return s.replace(/{/g, '｛').replace(/}/g, '｝');
+    return s.replace(/{/g, '｛').replace(/}/g, '｝').replace(/\r|\n/g, '');
   };
   // 将一行转换为ASS的事件
   var convert2Ass = function (line) {
@@ -158,7 +158,7 @@ Format: Layer, Start, End, Style, Text
       formatTime(line.stime),
       formatTime(line.dtime),
       line.type,
-      ''
+      ',20,20,2,,',
     ].join(',')
       + '{' + format[line.type](line) + '}'
       + escapeAssText(line.text);
