@@ -6,7 +6,7 @@
 // @include     /^http://bilibili\.kankanews\.com/video/.*$/
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.3beta
+// @version     0.4beta
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
@@ -17,10 +17,11 @@ var config = {
   'playResY': 420,           // 分辨率 高
   'font': 'Microsoft YaHei', // 字体
   'font_size': 1.0,          // 字体大小（比例）
-  'r2ltime': 6,              // 右到左弹幕持续时间
+  'r2ltime': 8,              // 右到左弹幕持续时间
   'fixtime': 4,              // 固定弹幕持续时间
   'opacity': 0.75,           // 不透明度
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
+  'timepad': 1.125           // 两条弹幕间隔比例
 };
 
 // 参数：第一个参数为对应的函数名（String，如"ping"、"getCid"）
@@ -58,8 +59,8 @@ var funStr = function (fun) {
   return fun.toString().split(/\r\n|\n|\r/).slice(1, -1).join('\n');
 };
 
-// 兼容不支持Math.hypot的浏览器
-if (!Math.hypot) Math.hypot = function () {
+// 平方和开根
+var hypot = Math.hypot ? Math.hypot.bind(Math) : function () {
   return Math.sqrt([0].concat(Array.apply(Array, arguments))
     .reduce(function (x, y) { return x + y * y; }));
 };
@@ -74,7 +75,7 @@ var startDownload = function (data, filename) {
   document.body.appendChild(saveas);
   saveas.download = filename;
   saveas.click();
-  setTimeout(function () { saveas.parentNode.removeChild(saveas); })
+  setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 0)
 };
 
 var generateASS = function (danmaku, info) {
@@ -120,9 +121,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
       var s = '';
       var rgb = line.color.split(/(..)/).filter(function (x) { return x; })
         .map(function (x) { return parseInt(x, 16); });
+      // 如果不是白色，要指定弹幕特殊的颜色
       if (line.color !== 'FFFFFF') // line.color 是 RRGGBB 格式
         s += '\\c&H' + line.color.split(/(..)/).reverse().join('');
-      var dark = rgb.r * 0.299 + rgb.g * 0.587 + rgb.b * 0.114 < 0x30;
+      // 如果弹幕颜色比较深，用白色的外边框
+      var dark = rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114 < 0x30;
       if (dark) s += '\\3c&HFFFFFF';
       return s;
     };
@@ -175,7 +178,7 @@ var calcWidth = (function () {
   var canvas = document.createElement("canvas");
   var context = canvas.getContext("2d");
   return function (text, font, fontsize) {
-    context.font = [fontsize, font].join(' ');
+    context.font = fontsize + 'px ' + font;
     return Math.ceil(context.measureText(text).width);
   };
 }());
@@ -196,6 +199,8 @@ v: 弹幕
 c: 屏幕
 
 0: 弹幕发送
+a: 可行方案
+
 s: 开始出现
 f: 出现完全
 l: 开始消失
@@ -213,8 +218,8 @@ r: 延迟
 
 并规定
 ts := t0s + r
-tf := wv / (wv + ws) * p + ts
-tl := ws / (wv + ws) * p + ts
+tf := wv / (wc + ws) * p + ts
+tl := ws / (wc + ws) * p + ts
 td := p + ts
 
 */
@@ -250,7 +255,7 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
         });
       });
       // 根据高度排序
-      suggestion.sort(function (x, y) { return x.p > y.p; });
+      suggestion.sort(function (x, y) { return x.p - y.p; });
       var mr = maxr;
       // 又靠右又靠下的选择可以忽略，剩下的返回
       suggestion = suggestion.filter(function (i) {
@@ -271,7 +276,7 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
     // 给所有可能的位置打分，分数是[0, 1)的
     var score = function (i) {
       if (i.r > maxr) return -Infinity;
-      return 1 - Math.hypot(i.r / maxr, i.p / hc) * Math.SQRT1_2;
+      return 1 - hypot(i.r / maxr, i.p / hc) * Math.SQRT1_2;
     };
     // 添加一条
     return function (t0s, wv, hv) {
@@ -293,7 +298,7 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
       };
     };
   };
-}(config.playResX, config.playResY, config.r2ltime * 1.1, config.max_delay));
+}(config.playResX, config.playResY, config.r2ltime * config.timepad, config.max_delay));
 
 var sideDanmaku = (function (hc, u, maxr) {
   return function () {
@@ -334,7 +339,7 @@ var sideDanmaku = (function (hc, u, maxr) {
     };
     var score = function (i, is_top) {
       if (i.r > maxr) return -Infinity;
-      var f = function (p) { return is_top ? p : (hc - p); };
+      var f = function (p) { return is_top ? (hc - p) : p; };
       return i.r / maxr * 0.875 + f(i.p) / hc * 0.125;
     };
     return function (t0s, hv, is_top) {
@@ -349,16 +354,16 @@ var sideDanmaku = (function (hc, u, maxr) {
       return { 'top': best.p, 'time': best.r + t0s };
     };
   };
-}(config.playResY, config.fixtime * 1.1, config.max_delay));
+}(config.playResY, config.fixtime * config.timepad, config.max_delay));
 
 // 为每条弹幕安置位置
 var setPosition = function (danmaku) {
   var normal = normalDanmaku(), side = sideDanmaku();
   return danmaku
-    .sort(function (x, y) { return x.time > y.time; })
+    .sort(function (x, y) { return x.time - y.time; })
     .map(function (line) {
-      var font_size = line.size * config.font_size;
-      var width = calcWidth(line.text, config.font, font_size) + 4 * font_size;
+      var font_size = Math.round(line.size * config.font_size);
+      var width = calcWidth(line.text, config.font, font_size);
       switch (line.mode) {
         case 1: case 2: case 3: return (function () {
           var pos = normal(line.time, width, font_size);
@@ -373,7 +378,7 @@ var setPosition = function (danmaku) {
             'x': -width,
             'y': pos.top
           };
-          line.dtime = config.r2ltime + line.stime;
+          line.dtime = config.r2ltime * config.timepad + line.stime;
           return line;
         }());
         case 4: case 5: return (function (isTop) {
@@ -385,14 +390,14 @@ var setPosition = function (danmaku) {
             'x': Math.round(config.playResX / 2),
             'y': pos.top
           };
-          line.dtime = config.fixtime + line.stime;
+          line.dtime = config.fixtime * config.timepad + line.stime;
           return line;
         }(line.mode === 5));
         default: return null;
       };
     })
     .filter(function (l) { return l; })
-    .sort(function (x, y) { return x.ctime > y.ctime; });
+    .sort(function (x, y) { return x.ctime - y.ctime; });
 };
 
 // 获取xml
