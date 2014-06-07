@@ -6,7 +6,9 @@
 // @include     /^http://bilibili\.kankanews\.com/video/.*$/
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.4beta
+// @version     0.5
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
+// @run-at      document-start
 // ==/UserScript==
+

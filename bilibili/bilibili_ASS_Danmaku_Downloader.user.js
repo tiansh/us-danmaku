@@ -6,9 +6,10 @@
 // @include     /^http://bilibili\.kankanews\.com/video/.*$/
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.4beta
+// @version     0.5
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
+// @run-at      document-start
 // ==/UserScript==
 
 // 设置项
@@ -365,7 +366,7 @@ var setPosition = function (danmaku) {
       var font_size = Math.round(line.size * config.font_size);
       var width = calcWidth(line.text, config.font, font_size);
       switch (line.mode) {
-        case 1: case 2: case 3: return (function () {
+        case 'R2L': return (function () {
           var pos = normal(line.time, width, font_size);
           if (!pos) return null;
           line.type = 'R2L';
@@ -381,7 +382,7 @@ var setPosition = function (danmaku) {
           line.dtime = config.r2ltime * config.timepad + line.stime;
           return line;
         }());
-        case 4: case 5: return (function (isTop) {
+        case 'TOP': case 'BOTTOM': return (function (isTop) {
           var pos = side(line.time, font_size, isTop);
           if (!pos) return null;
           line.type = 'Fix';
@@ -392,7 +393,7 @@ var setPosition = function (danmaku) {
           };
           line.dtime = config.fixtime * config.timepad + line.stime;
           return line;
-        }(line.mode === 5));
+        }(line.mode === 'TOP'));
         default: return null;
       };
     })
@@ -412,7 +413,7 @@ var fetchXML = function (cid, callback) {
         return {
           'text': text,
           'time': Number(info[0]),
-          'mode': Number(info[1]),
+          'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
           'size': Number(info[2]),
           'color': RRGGBB(Number(info[3])),
           'create': new Date(Number(info[4])),
@@ -436,7 +437,27 @@ var getCid = function (callback) {
     ).match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (cid) setTimeout(function () { callback(cid); }, 0);
-  else alert('没拿到cid。');
+};
+
+// 下载的主程序
+var mina = function (cid0) {
+  getCid(function (cid) {
+    cid = cid || cid0;
+    fetchXML(cid, function (danmaku) {
+      var name;
+      try { name = document.querySelector('.viewbox h2').textContent; }
+      catch (e) { name = '' + cid; }
+      var ass = generateASS(setPosition(danmaku), {
+        'title': document.title,
+        'ori': location.href,
+      });
+      startDownload(ass, name + '.ass');
+    });
+  });
+};
+
+var showButton = function () {
+  GM_addStyle('#assdown { display: block !important; }');
 };
 
 // 初始化按钮
@@ -444,26 +465,13 @@ var initButton = (function () {
   var done = false;
   return function () {
     if (!document.querySelector('#assdown')) return;
-    if (done) return; else done = true;
-    GM_addStyle('#assdown { display: block !important; }');
-    document.querySelector('#assdown').addEventListener('click', function (e) {
-      getCid(function (cid) {
-        fetchXML(cid, function (danmaku) {
-          try {
-            var name;
-            try { name = document.querySelector('.viewbox h2').textContent; }
-            catch (e) { name = '' + cid; }
-            var ass = generateASS(setPosition(danmaku), {
-              'title': document.title,
-              'ori': location.href,
-            });
-            startDownload(ass, name + '.ass');
-          } catch (e) {
-            console.log(e);
-          }
-        });
+    getCid(function (cid) {
+      if (done) return; else done = true;
+      showButton();
+      document.querySelector('#assdown') .addEventListener('click', function (e) {
+        e.preventDefault();
+        mina(cid);
       });
-      e.preventDefault();
     });
   };
 }());
