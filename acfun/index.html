@@ -3,34 +3,36 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
-  <title>bilibili ASS Danmaku Downloader</title>
-  <meta name="keywords" content="bilibili, 哔哩哔哩, 弹幕, danmaku, 下载" />
-  <meta name="description" content="以 ASS 格式下载 bilibili 的弹幕" />
+  <title>AcFun ASS Danmaku Downloader</title>
+  <meta name="keywords" content="AcFun, 爱稀饭, 弹幕, danmaku, 下载" />
+  <meta name="description" content="以 ASS 格式下载 AcFun 的弹幕" />
   <style>
     html, body { font-family: "Microsoft YaHei",Helvetica,Arial,sans-serif; font-size: 16px; font-weight: normal; line-height: 24px; margin: 0; padding: 0; }
-    body { background: #f0f0f0; padding-bottom: 40px; }
+    body { background: #d9e5ed; padding-bottom: 40px; }
     #main-body { width: 960px; margin: 0 auto; }
     h1, h2, h3, h4, h5, h6 { margin: 0; padding: 0; font-size: 100%; font-weight: normal; }
-    a, a:hover, a:active, a:visited { text-decoration: none; color: #f25d8e; outline: none; }
+    a, a:hover, a:active, a:visited { text-decoration: none; color: #026b76; outline: none; }
     a img { border: none; }
-    h1 { color: #D95E7F; font-size: 40px; line-height: 60px; margin: 40px 0 20px 0; padding: 0; font-weight: bold; }
-    header { display: block; height: 200px; }
-    header li { list-style: none; }
-    #intro { border: 2px solid #F25D8E; float: left; height: 120px; line-height: 40px; font-size: 20px; padding: 18px; background: #f8f8f8; border-radius: 8px; margin-left: 30px; color: #333; }
-    #intro strong { color: #000; font-weight: normal; }
-    #side-buttons { width: 400px; height: 160px; float: right; padding: 0; text-align: right; margin-right: 30px; }
-    #install { background: #F25D8E; color: #fff; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; display: block; float: right; text-align: center; }
-    #install:hover { background: #f32b6d; }
-    #report { float: right; width: 100%; height: 70px; padding: 20px 0 0; display: block; font-size: 16px; }
+    #background { width: 100%; height: 380px; margin-bottom: -380px; }
+    #title_bg { width: 100%; height: 120px; background: #efd387; }
+    #head_bg { width: 100%; height: 260px; background: #f9f9f9; }
+    h1 { color: #000; font-size: 40px; line-height: 60px; margin: 0; padding: 40px 0 20px; font-weight: bold; }
+    h1 span { color: #aa6b17; font-size: 45px; }
+    header { display: block; height: 260px; width: 100%; }
+    #intro { height: 260px; font-size: 20px; font-weight: bold; margin-bottom: -260px; }
+    #intro h2 { float: right; line-height: 45px; font-size: 36px; margin: 30px 30px 0 0; font-weight: bold; color: #0068b8; }
+    #intro span { float: right; line-height: 30px; font-size: 20px; margin: 10px 30px 0 0; clear: both; color: #555; }
+    #side-buttons { width: 100%; height: 260px; padding: 0; position: relative; }
+    #install { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; display: block; float: left; text-align: center; }
+    #install:hover { background-color: #48A2DF; border-color: #48A2DF; }
+    #report { float: right; width: 400px; height: 70px; padding: 20px 30px 0; display: block; font-size: 16px; }
     #report1, #report2 { height: 80px; width: 48%; display: block; }
     #report1 { float: left; }
     #report2 { float: right; }
     #report a { width: 100%; background: #e1e1e1; display: block; height: 40px; line-height: 40px; color: #aaa; text-align: center; }
-    #report a:hover { background: #fdb4c8; color: #fff; }
+    #report a:hover { background: #a1d7e4; color: #fff; }
     #report span { width: 100%; text-align: center; display: block; line-height: 30px; color: #aaa; }
-    #install_instruct h3 { margin; }
-    h3 { font-size: 24px; font-weight: bold; border-bottom: 2px #ccc solid; padding: 10px 20px; margin: 20px 0 10px; }
-    h3::before { background: #f32b6d; content: ""; display: block; float: left; height: 20px; left: -20px; position: relative; width: 10px; }
+    h3 { font-size: 24px; font-weight: bold; border-bottom: 2px #ccc solid; padding: 10px 20px 10px 10px; margin: 20px 0 10px; color: #333; }
     .browser { width: 840px; padding: 10px 20px 10px 100px; position: relative; min-height: 100px; }
     .browser-icon { position: absolute; left: 20px; top: 20px; }
     .warning { color: red; font-weight: bold; }
@@ -40,24 +42,27 @@
   </style>
 </head>
 <body>
+  <div id="background">
+    <div id="title_bg"></div>
+    <div id="head_bg"></div>
+  </div>
   <div id="main-body">
-    <h1>bilibili ASS Danmaku Downloader</h1>
+    <h1><span>AcFun</span> ASS Danmaku Downloader</h1>
     <header>
       <div id="intro">
-        以 ASS 格式下载 bilibili 视频弹幕<br />
-        兼容 libass 和 VSFilter 的 ASS 格式解析器<br />
-
+        <h2>以 ASS 格式下载 AcFun 视频弹幕</h2>
+        <span>兼容 libass 和 VSFilter 的 ASS 格式解析器</span>
       </div>
       <div id="side-buttons">
-        <a id="install" href="bilibili_ASS_Danmaku_Downloader.user.js">安装脚本</a>
+        <a id="install" href="AcFun_ASS_Danmaku_Downloader.user.js">安装脚本</a>
         <div id="report">
           <div id="report1">
             <a href="https://github.com/tiansh/us-danmaku/issues" target="_blank">报告Bug</a>
             <span>在github上报告错误</span>
           </div>
           <div id="report2">
-            <a href="http://member.bilibili.tv/#msg&amp;act=new&amp;mid=1378109" target="_blank">私信我</a>
-            <span>在bilibili上私信作者</span>
+            <a href="http://www.acfun.com/member/#area=mail-new;username=tsh" target="_blank">私信我</a>
+            <span>在AcFun上私信作者</span>
           </div>
         </div>
       </div>
@@ -65,9 +70,8 @@
     <h3>功能</h3>
     <div class="in">
       <div class="p">
-        以 ASS 格式下载 bilibili 弹幕<br />
-        脚本会在视频页面上分享按钮左面显示下载弹幕的按钮，点击即可下载当前视频的弹幕。<br />
-        已知问题：播放器自动下一分页时可能无法下载到正确的弹幕。
+        以 ASS 格式下载 AcFun 的弹幕。<br />
+        脚本会在视频页面的收藏按钮左面添加一个弹幕下载的按钮，点击即可下载当前视频的弹幕。
       </div>
     </div>
 
