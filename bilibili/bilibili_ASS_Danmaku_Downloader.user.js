@@ -6,7 +6,7 @@
 // @include     http://bilibili.kankanews.com/video/*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.6
+// @version     0.7
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -372,12 +372,12 @@ var setPosition = function (danmaku) {
           line.type = 'R2L';
           line.stime = pos.time;
           line.poss = {
-            'x': config.playResX + width,
-            'y': pos.top
+            'x': config.playResX + width / 2,
+            'y': pos.top + font_size,
           };
           line.posd = {
-            'x': -width,
-            'y': pos.top
+            'x': -width / 2,
+            'y': pos.top + font_size,
           };
           line.dtime = config.r2ltime * config.timepad + line.stime;
           return line;
@@ -389,7 +389,7 @@ var setPosition = function (danmaku) {
           line.stime = pos.time;
           line.posd = line.poss = {
             'x': Math.round(config.playResX / 2),
-            'y': pos.top
+            'y': pos.top + font_size,
           };
           line.dtime = config.fixtime * config.timepad + line.stime;
           return line;
@@ -462,6 +462,7 @@ var mina = function (cid0) {
 
 var showButton = function () {
   GM_addStyle('#assdown { display: block !important; }');
+  document.querySelector('#assdown').href = '#';
 };
 
 // 初始化按钮
