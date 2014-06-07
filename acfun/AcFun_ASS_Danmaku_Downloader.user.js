@@ -5,7 +5,7 @@
 // @include     http://www.acfun.com/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     0.5
+// @version     0.6
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -330,8 +330,8 @@ var sideDanmaku = (function (hc, u, maxr) {
     };
     var score = function (i, is_top) {
       if (i.r > maxr) return -Infinity;
-      var f = function (p) { return is_top ? (hc - p) : p; };
-      return i.r / maxr * 0.875 + f(i.p) / hc * 0.125;
+      var f = function (p) { return is_top ? p : (hc - p); };
+      return 1 - (i.r / maxr * (31/32) + f(i.p) / hc * (1/32));
     };
     return function (t0s, hv, is_top) {
       syn(t0s);
