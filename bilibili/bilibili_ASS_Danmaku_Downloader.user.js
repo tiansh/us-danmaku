@@ -2,11 +2,11 @@
 // @name        bilibili ASS Danmaku Downloader
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 bilibili 的弹幕
-// @include     http://www.bilibili.tv/video/*
-// @include     http://bilibili.kankanews.com/video/*
+// @include     http://www.bilibili.tv/video/av*
+// @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.7
+// @version     0.8
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -405,7 +405,7 @@ var setPosition = function (danmaku) {
 var fetchXML = function (cid, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://comment.bilibili.cn/{{cid}}.xml'.replace('{{cid}}', cid),
+    'url': 'http://comment.bilibili.com/{{cid}}.xml'.replace('{{cid}}', cid),
     'onload': function (resp) {
       var data = (new DOMParser()).parseFromString(resp.responseText, 'text/xml');
       var danmaku = Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
