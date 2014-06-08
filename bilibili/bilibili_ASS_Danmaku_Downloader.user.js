@@ -6,31 +6,34 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.8
+// @version     0.9
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
 // ==/UserScript==
 
+/*
+ * Common
+ */
+
 // 设置项
 var config = {
   'playResX': 560,           // 分辨率 宽
   'playResY': 420,           // 分辨率 高
-  'font': 'Microsoft YaHei', // 字体
+  'font': [                  // 字体
+    'Microsoft YaHei UI',
+    'Microsoft YaHei',
+    '文泉驿正黑',
+    'STHeitiSC',
+    '黑体',
+    'sans-serif',
+  ],
   'font_size': 1.0,          // 字体大小（比例）
   'r2ltime': 8,              // 右到左弹幕持续时间
   'fixtime': 4,              // 固定弹幕持续时间
   'opacity': 0.75,           // 不透明度
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
   'timepad': 1.125           // 两条弹幕间隔比例
-};
-
-// 参数：第一个参数为对应的函数名（String，如"ping"、"getCid"）
-//      后面的若干个参数为传给这个函数的参数
-var rbb = function () {
-  if (!unsafeWindow.replaceBilibiliBofqi) unsafeWindow.replaceBilibiliBofqi = [];
-  unsafeWindow.replaceBilibiliBofqi.push(Array.apply(Array, arguments));
-  return unsafeWindow.replaceBilibiliBofqi.constructor.name !== 'Array';
 };
 
 // 将字典中的值填入字符串
@@ -79,6 +82,55 @@ var startDownload = function (data, filename) {
   setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 0)
 };
 
+// 计算文本宽度
+// 使用Canvas作为计算方法
+var calcWidth = (function () {
+  var canvas = document.createElement("canvas");
+  var context = canvas.getContext("2d");
+  // 从备选的字体中选择一个机器上提供了的字体
+  var fontChose = function (fontlist) {
+    // 检查这个字串的宽度来检查字体是否存在
+    var sampleText =
+      'The quick brown fox jumps over the lazy dog' +
+      '7531902468' + ',.!-' + '，。：！' +
+      '天地玄黄' + '則近道矣';
+    // 和这些字体进行比较
+    var sampleFont = [
+      'monospace', 'sans-serif', 'sans',
+      'Symbol', 'Arial', 'Comic Sans MS', 'Fixed', 'Terminal',
+      'Times', 'Times New Roman',
+      '宋体', '黑体', '文泉驿正黑', 'Microsoft YaHei'
+    ];
+    // 如果被检查的字体和基准字体可以渲染出不同的宽度
+    // 那么说明被检查的字体总是存在的
+    var diffFont = function (base, test) {
+      context.font = 'bold 72px ' + base;
+      var baseSize = context.measureText(sampleText).width;
+      context.font = 'bold 72px ' + test + ',' + base;
+      var testSize = context.measureText(sampleText).width;
+      return baseSize !== testSize;
+    };
+    var validFont = function (test) {
+      return sampleFont.some(function (base) {
+        return diffFont(base, test);
+      });
+    };
+    // 找一个能用的字体
+    var f = fontlist[fontlist.length - 1];
+    fontlist.some(function (font) {
+      if (validFont(font)) { f = font; return true; }
+      return false;
+    });
+    return f;
+  };
+  config.font = fontChose(config.font);
+  return function (text, fontsize) {
+    context.font = 'bold ' + fontsize + 'px ' + config.font;
+    return Math.ceil(context.measureText(text).width);
+  };
+}());
+
+
 var generateASS = function (danmaku, info) {
   var assHeader = fillStr(funStr(function () {/*! ASS弹幕文件文件头
 [Script Info]
@@ -92,8 +144,8 @@ Timer: 10.0000
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Fix,Microsoft YaHei,25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000000,&H{{alpha}}000000,1,0,0,0,100,100,0,0,1,2,0,2,20,20,2,0
-Style: R2L,Microsoft YaHei,25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000000,&H{{alpha}}000000,1,0,0,0,100,100,0,0,1,2,0,2,20,20,2,0
+Style: Fix,{{font}},25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000000,&H{{alpha}}000000,1,0,0,0,100,100,0,0,1,2,0,2,20,20,2,0
+Style: R2L,{{font}},25,&H{{alpha}}FFFFFF,&H{{alpha}}FFFFFF,&H{{alpha}}000000,&H{{alpha}}000000,1,0,0,0,100,100,0,0,1,2,0,2,20,20,2,0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -128,6 +180,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
       // 如果弹幕颜色比较深，用白色的外边框
       var dark = rgb[0] * 0.299 + rgb[1] * 0.587 + rgb[2] * 0.114 < 0x30;
       if (dark) s += '\\3c&HFFFFFF';
+      if (line.size !== 25) s += '\\fs' + line.size;
       return s;
     };
     // 适用于从右到左弹幕
@@ -172,17 +225,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     .filter(function (x) { return x; })
     .join('\n');
 };
-
-// 计算文本宽度
-// 使用Canvas作为计算方法
-var calcWidth = (function () {
-  var canvas = document.createElement("canvas");
-  var context = canvas.getContext("2d");
-  return function (text, font, fontsize) {
-    context.font = fontsize + 'px ' + font;
-    return Math.ceil(context.measureText(text).width);
-  };
-}());
 
 /*
 
@@ -364,7 +406,7 @@ var setPosition = function (danmaku) {
     .sort(function (x, y) { return x.time - y.time; })
     .map(function (line) {
       var font_size = Math.round(line.size * config.font_size);
-      var width = calcWidth(line.text, config.font, font_size);
+      var width = calcWidth(line.text, font_size);
       switch (line.mode) {
         case 'R2L': return (function () {
           var pos = normal(line.time, width, font_size);
@@ -400,6 +442,10 @@ var setPosition = function (danmaku) {
     .filter(function (l) { return l; })
     .sort(function (x, y) { return x.ctime - y.ctime; });
 };
+
+/*
+ * bilibili
+ */
 
 // 获取xml
 var fetchXML = function (cid, callback) {
@@ -482,4 +528,12 @@ var initButton = (function () {
 }());
 
 window.addEventListener('DOMContentLoaded', initButton);
+
+// 参数：第一个参数为对应的函数名（String，如"ping"、"getCid"）
+//      后面的若干个参数为传给这个函数的参数
+var rbb = function () {
+  if (!unsafeWindow.replaceBilibiliBofqi) unsafeWindow.replaceBilibiliBofqi = [];
+  unsafeWindow.replaceBilibiliBofqi.push(Array.apply(Array, arguments));
+  return unsafeWindow.replaceBilibiliBofqi.constructor.name !== 'Array';
+};
 rbb('replaced', initButton);
