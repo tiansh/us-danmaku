@@ -5,7 +5,7 @@
 // @include     http://www.acfun.com/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     0.7
+// @version     0.8
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -421,7 +421,7 @@ var getDanmakuId = function (callback) {
   var vid = Number(m[1]);
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://www.acfun.tv/video/getVideo.aspx?id=' + vid,
+    'url': 'http://www.acfun.com/video/getVideo.aspx?id=' + vid,
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
@@ -435,7 +435,7 @@ var getDanmakuId = function (callback) {
 var getDanmaku = function (danmakuId, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://comment.acfun.tv/' + danmakuId + '.json',
+    'url': 'http://comment.acfun.com/' + danmakuId + '.json',
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
