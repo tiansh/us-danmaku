@@ -41,7 +41,9 @@
 </head>
 <body>
   <div id="main-body">
+
     <h1>bilibili ASS Danmaku Downloader</h1>
+
     <header>
       <div id="intro">
         以 ASS 格式下载 bilibili 视频弹幕<br />
@@ -63,16 +65,20 @@
       </div>
     </header>
 
-    <div class="in">
-      <div class="p"><a href="../acfun/">AcFun ASS Danmaku Downloader</a></div>
-    </div>
-
     <h3>功能</h3>
     <div class="in">
       <div class="p">
         以 ASS 格式下载 bilibili 弹幕<br />
         脚本会在视频页面上分享按钮左面显示下载弹幕的按钮，点击即可下载当前视频的弹幕。<br />
-        已知问题：播放器自动下一分页时可能无法下载到正确的弹幕。
+        已知问题：播放器自动下一分页时可能无法下载到正确的弹幕。<br />
+        注意，如果您的机器配置较差，在弹幕较多的时候下载和转换可能会导致浏览器暂时的无响应，一般等待几秒即可。
+      </div>
+      <div class="p">
+        效果截图：<br />
+        <figure>
+          <img itemprop="screenshot" alt="av936732在第343.0秒的带弹幕截图" src="av936732-342956.png" width="640" height="360" />
+          <figcaption>av936732在第343.0秒的带弹幕截图</figcaption>
+        </figure>
       </div>
     </div>
 
@@ -101,6 +107,11 @@
         脚本使用了 GM_xmlhttpRequest 接口用于获取弹幕信息。（如果获取失败当前可能下载到空弹幕）<br />
         脚本暂没有本地存储，也不会访问其他地址。后续版本可能会添加本地存储，到时再说。
       </div>
+    </div>
+
+    <h3>相关脚本</h3>
+    <div class="in">
+      <div class="p">AcFun的弹幕下载请参考：<a href="../acfun/">AcFun ASS Danmaku Downloader</a></div>
     </div>
 
   </div>

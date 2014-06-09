@@ -6,7 +6,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     0.9
+// @version     1.0
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -31,9 +31,10 @@ var config = {
   'font_size': 1.0,          // 字体大小（比例）
   'r2ltime': 8,              // 右到左弹幕持续时间
   'fixtime': 4,              // 固定弹幕持续时间
-  'opacity': 0.75,           // 不透明度
+  'opacity': 0.6,            // 不透明度
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
-  'timepad': 1.125           // 两条弹幕间隔比例
+  'timepad': 1.125,          // 两条弹幕间隔比例
+  'bottom': 60,              // 底端给字幕保留的空间
 };
 
 // 将字典中的值填入字符串
@@ -254,6 +255,7 @@ m: 下边缘（不含）
 
 w: 宽度
 h: 高度
+b: 底端保留
 
 t: 时间点
 u: 时间段
@@ -267,15 +269,16 @@ td := p + ts
 
 */
 
-var normalDanmaku = (function (wc, hc, u, maxr) {
+var normalDanmaku = (function (wc, hc, b, u, maxr) {
   return function () {
     // 初始化屏幕外面是不可用的
     var used = [
-      { 'p': -Infinity, 'm': 0, 'tf': Infinity, 'td': Infinity },
-      { 'p': hc, 'm': Infinity, 'tf': Infinity, 'td': Infinity },
+      { 'p': -Infinity, 'm': 0, 'tf': Infinity, 'td': Infinity, 'b': false },
+      { 'p': hc, 'm': Infinity, 'tf': Infinity, 'td': Infinity, 'b': false },
+      { 'p': hc - b, 'm': hc, 'tf': Infinity, 'td': Infinity, 'b': true },
     ];
     // 检查一些可用的位置
-    var available = function (hv, t0s, t0l) {
+    var available = function (hv, t0s, t0l, b) {
       var suggestion = [];
       // 这些上边缘总之别的块的下边缘
       used.forEach(function (i) {
@@ -288,6 +291,7 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
         used.forEach(function (j) {
           if (j.p >= m) return;
           if (j.m <= p) return;
+          if (j.b && b) return;
           tas = Math.max(tas, j.tf);
           tal = Math.max(tal, j.td);
         });
@@ -310,7 +314,7 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
     };
     // 添加一个被使用的
     var use = function (p, m, tf, td) {
-      used.push({ 'p': p, 'm': m, 'tf': tf, 'td': td });
+      used.push({ 'p': p, 'm': m, 'tf': tf, 'td': td, 'b': false });
     };
     // 根据时间同步掉无用的
     var syn = function (t0s, t0l) {
@@ -322,10 +326,10 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
       return 1 - hypot(i.r / maxr, i.p / hc) * Math.SQRT1_2;
     };
     // 添加一条
-    return function (t0s, wv, hv) {
+    return function (t0s, wv, hv, b) {
       var t0l = wc / (wv + wc) * u + t0s;
       syn(t0s, t0l);
-      var al = available(hv, t0s, t0l);
+      var al = available(hv, t0s, t0l, b);
       if (!al.length) return null;
       var scored = al.map(function (i) { return [score(i), i]; });
       var best = scored.reduce(function (x, y) {
@@ -341,41 +345,43 @@ var normalDanmaku = (function (wc, hc, u, maxr) {
       };
     };
   };
-}(config.playResX, config.playResY, config.r2ltime * config.timepad, config.max_delay));
+}(config.playResX, config.playResY, config.bottom, config.r2ltime * config.timepad, config.max_delay));
 
-var sideDanmaku = (function (hc, u, maxr) {
+var sideDanmaku = (function (hc, b, u, maxr) {
   return function () {
     var used = [
-      { 'p': -Infinity, 'm': 0, 'td': Infinity },
-      { 'p': hc, 'm': Infinity, 'td': Infinity },
+      { 'p': -Infinity, 'm': 0, 'td': Infinity, 'b': false },
+      { 'p': hc, 'm': Infinity, 'td': Infinity, 'b': false },
+      { 'p': hc - b, 'm': hc, 'td': Infinity, 'b': true },
     ];
-    var fr = function (p, m, t0s) {
+    var fr = function (p, m, t0s, b) {
       var tas = t0s;
       used.forEach(function (j) {
         if (j.p >= m) return;
         if (j.m <= p) return;
+        if (j.b && b) return;
         tas = Math.max(tas, j.td);
       });
       return { 'r': tas - t0s, 'p': p, 'm': m };
     };
-    var top = function (hv, t0s) {
+    var top = function (hv, t0s, b) {
       var suggestion = [];
       used.forEach(function (i) {
         if (i.m > hc) return;
-        suggestion.push(fr(i.m, i.m + hv, t0s));
+        suggestion.push(fr(i.m, i.m + hv, t0s, b));
       });
       return suggestion;
     };
-    var bottom = function (hv, t0s) {
+    var bottom = function (hv, t0s, b) {
       var suggestion = [];
       used.forEach(function (i) {
         if (i.p < 0) return;
-        suggestion.push(fr(i.p - hv, i.p, t0s));
+        suggestion.push(fr(i.p - hv, i.p, t0s, b));
       });
       return suggestion;
     };
     var use = function (p, m, td) {
-      used.push({ 'p': p, 'm': m, 'td': td });
+      used.push({ 'p': p, 'm': m, 'td': td, 'b': false });
     };
     var syn = function (t0s) {
       used = used.filter(function (i) { return i.td > t0s; });
@@ -385,9 +391,9 @@ var sideDanmaku = (function (hc, u, maxr) {
       var f = function (p) { return is_top ? p : (hc - p); };
       return 1 - (i.r / maxr * (31/32) + f(i.p) / hc * (1/32));
     };
-    return function (t0s, hv, is_top) {
+    return function (t0s, hv, is_top, b) {
       syn(t0s);
-      var al = (is_top ? top : bottom)(hv, t0s);
+      var al = (is_top ? top : bottom)(hv, t0s, b);
       if (!al.length) return null;
       var scored = al.map(function (i) { return [score(i, is_top), i]; });
       var best = scored.reduce(function (x, y) {
@@ -397,7 +403,7 @@ var sideDanmaku = (function (hc, u, maxr) {
       return { 'top': best.p, 'time': best.r + t0s };
     };
   };
-}(config.playResY, config.fixtime * config.timepad, config.max_delay));
+}(config.playResY, config.bottom, config.fixtime * config.timepad, config.max_delay));
 
 // 为每条弹幕安置位置
 var setPosition = function (danmaku) {
@@ -409,7 +415,7 @@ var setPosition = function (danmaku) {
       var width = calcWidth(line.text, font_size);
       switch (line.mode) {
         case 'R2L': return (function () {
-          var pos = normal(line.time, width, font_size);
+          var pos = normal(line.time, width, font_size, line.bottom);
           if (!pos) return null;
           line.type = 'R2L';
           line.stime = pos.time;
@@ -425,7 +431,7 @@ var setPosition = function (danmaku) {
           return line;
         }());
         case 'TOP': case 'BOTTOM': return (function (isTop) {
-          var pos = side(line.time, font_size, isTop);
+          var pos = side(line.time, font_size, isTop, line.bottom);
           if (!pos) return null;
           line.type = 'Fix';
           line.stime = pos.time;
@@ -462,10 +468,11 @@ var fetchXML = function (cid, callback) {
           'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
           'size': Number(info[2]),
           'color': RRGGBB(Number(info[3])),
-          'create': new Date(Number(info[4])),
-          'pool': Number(info[5]),
-          'sender': String(info[6]),
-          'dmid': Number(info[7]),
+          'bottom': Number(info[5]) > 0,
+          // 'create': new Date(Number(info[4])),
+          // 'pool': Number(info[5]),
+          // 'sender': String(info[6]),
+          // 'dmid': Number(info[7]),
         };
       });
       callback(danmaku);
