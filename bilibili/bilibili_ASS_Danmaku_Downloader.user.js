@@ -11,7 +11,7 @@
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
 // @copyright   2014+, 田生
-// @licence     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
+// @license     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
 // ==/UserScript==
 
 /*
