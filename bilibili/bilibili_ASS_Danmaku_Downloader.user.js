@@ -6,10 +6,12 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.0
+// @version     1.1
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
+// @copyright   2014+, 田生
+// @licence     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
 // ==/UserScript==
 
 /*
@@ -32,9 +34,9 @@ var config = {
   'r2ltime': 8,              // 右到左弹幕持续时间
   'fixtime': 4,              // 固定弹幕持续时间
   'opacity': 0.6,            // 不透明度
+  'space': 50,               // 弹幕间隔的最小水平距离
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
-  'timepad': 1.125,          // 两条弹幕间隔比例
-  'bottom': 60,              // 底端给字幕保留的空间
+  'bottom': 75,              // 底端给字幕保留的空间
 };
 
 // 将字典中的值填入字符串
@@ -127,7 +129,7 @@ var calcWidth = (function () {
   config.font = fontChose(config.font);
   return function (text, fontsize) {
     context.font = 'bold ' + fontsize + 'px ' + config.font;
-    return Math.ceil(context.measureText(text).width);
+    return Math.ceil(context.measureText(text).width + config.space);
   };
 }());
 
@@ -345,7 +347,7 @@ var normalDanmaku = (function (wc, hc, b, u, maxr) {
       };
     };
   };
-}(config.playResX, config.playResY, config.bottom, config.r2ltime * config.timepad, config.max_delay));
+}(config.playResX, config.playResY, config.bottom, config.r2ltime, config.max_delay));
 
 var sideDanmaku = (function (hc, b, u, maxr) {
   return function () {
@@ -403,7 +405,7 @@ var sideDanmaku = (function (hc, b, u, maxr) {
       return { 'top': best.p, 'time': best.r + t0s };
     };
   };
-}(config.playResY, config.bottom, config.fixtime * config.timepad, config.max_delay));
+}(config.playResY, config.bottom, config.fixtime, config.max_delay));
 
 // 为每条弹幕安置位置
 var setPosition = function (danmaku) {
@@ -427,7 +429,7 @@ var setPosition = function (danmaku) {
             'x': -width / 2,
             'y': pos.top + font_size,
           };
-          line.dtime = config.r2ltime * config.timepad + line.stime;
+          line.dtime = config.r2ltime + line.stime;
           return line;
         }());
         case 'TOP': case 'BOTTOM': return (function (isTop) {
@@ -439,7 +441,7 @@ var setPosition = function (danmaku) {
             'x': Math.round(config.playResX / 2),
             'y': pos.top + font_size,
           };
-          line.dtime = config.fixtime * config.timepad + line.stime;
+          line.dtime = config.fixtime + line.stime;
           return line;
         }(line.mode === 'TOP'));
         default: return null;
@@ -493,7 +495,7 @@ var getCid = function (callback) {
       document.querySelector('#bofqi embed').getAttribute('flashvars')
       .match(/cid=(\d+)/)[1]);
   } catch (e) { }
-  if (cid) setTimeout(function () { callback(cid); }, 0);
+  setTimeout(function () { callback(cid || undefined); }, 0);
 };
 
 // 下载的主程序
@@ -524,9 +526,9 @@ var initButton = (function () {
   return function () {
     if (!document.querySelector('#assdown')) return;
     getCid(function (cid) {
-      if (done) return; else done = true;
+      if (!cid || done) return; else done = true;
       showButton();
-      document.querySelector('#assdown') .addEventListener('click', function (e) {
+      document.querySelector('#assdown').addEventListener('click', function (e) {
         e.preventDefault();
         mina(cid);
       });

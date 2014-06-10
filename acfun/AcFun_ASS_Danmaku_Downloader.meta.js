@@ -5,9 +5,12 @@
 // @include     http://www.acfun.com/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.0
+// @version     1.1
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
+// @copyright   2014+, 田生
+// @licence     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
+// @licence     CC Attribution-ShareAlike 4.0 International; http://creativecommons.org/licenses/by-sa/4.0/
 // ==/UserScript==
 
