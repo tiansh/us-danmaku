@@ -6,7 +6,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.1
+// @version     1.2
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -20,24 +20,27 @@
 
 // 设置项
 var config = {
-  'playResX': 560,           // 分辨率 宽
-  'playResY': 420,           // 分辨率 高
-  'font': [                  // 字体
+  'playResX': 560,           // 屏幕分辨率宽（像素）
+  'playResY': 420,           // 屏幕分辨率高（像素）
+  'fontlist': [              // 字形（会自动选择最前面一个可用的）
     'Microsoft YaHei UI',
     'Microsoft YaHei',
     '文泉驿正黑',
     'STHeitiSC',
     '黑体',
-    'sans-serif',
   ],
-  'font_size': 1.0,          // 字体大小（比例）
-  'r2ltime': 8,              // 右到左弹幕持续时间
-  'fixtime': 4,              // 固定弹幕持续时间
-  'opacity': 0.6,            // 不透明度
-  'space': 50,               // 弹幕间隔的最小水平距离
+  'font_size': 1.0,          // 字号（比例）
+  'r2ltime': 8,              // 右到左弹幕持续时间（秒）
+  'fixtime': 4,              // 固定弹幕持续时间（秒）
+  'opacity': 0.6,            // 不透明度（比例）
+  'space': 0,                // 弹幕间隔的最小水平距离（像素）
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
-  'bottom': 75,              // 底端给字幕保留的空间
+  'bottom': 50,              // 底端给字幕保留的空间（像素）
+  'use_canvas': null,        // 是否使用canvas计算文本宽度（布尔值，Linux下的火狐默认否，其他默认是，Firefox bug #561361）
+  'debug': false,            // 打印调试信息
 };
+
+var debug = config.debug ? console.log.bind(console) : function () { };
 
 // 将字典中的值填入字符串
 var fillStr = function (str) {
@@ -85,54 +88,92 @@ var startDownload = function (data, filename) {
   setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 0)
 };
 
-// 计算文本宽度
-// 使用Canvas作为计算方法
+// 计算文字宽度
 var calcWidth = (function () {
-  var canvas = document.createElement("canvas");
-  var context = canvas.getContext("2d");
-  // 从备选的字体中选择一个机器上提供了的字体
-  var fontChose = function (fontlist) {
-    // 检查这个字串的宽度来检查字体是否存在
-    var sampleText =
-      'The quick brown fox jumps over the lazy dog' +
-      '7531902468' + ',.!-' + '，。：！' +
-      '天地玄黄' + '則近道矣';
-    // 和这些字体进行比较
-    var sampleFont = [
-      'monospace', 'sans-serif', 'sans',
-      'Symbol', 'Arial', 'Comic Sans MS', 'Fixed', 'Terminal',
-      'Times', 'Times New Roman',
-      '宋体', '黑体', '文泉驿正黑', 'Microsoft YaHei'
-    ];
-    // 如果被检查的字体和基准字体可以渲染出不同的宽度
-    // 那么说明被检查的字体总是存在的
-    var diffFont = function (base, test) {
-      context.font = 'bold 72px ' + base;
-      var baseSize = context.measureText(sampleText).width;
-      context.font = 'bold 72px ' + test + ',' + base;
-      var testSize = context.measureText(sampleText).width;
-      return baseSize !== testSize;
+
+  // 使用Canvas计算
+  var calcWidthCanvas = function () {
+    var canvas = document.createElement("canvas");
+    var context = canvas.getContext("2d");
+    return function (fontname, text, fontsize) {
+      context.font = 'bold ' + fontsize + 'px ' + fontname;
+      return Math.ceil(context.measureText(text).width + config.space);
     };
-    var validFont = function (test) {
-      return sampleFont.some(function (base) {
-        return diffFont(base, test);
-      });
+  }
+
+  // 使用Div计算
+  var calcWidthDiv = function () {
+    var d = document.createElement('div');
+    d.setAttribute('style', [
+      'all: unset', 'top: -10000px', 'left: -10000px',
+      'width: auto', 'height: auto', 'position: absolute',
+    '',].join(' !important; '));
+    var ld = function () { document.body.parentNode.appendChild(d); }
+    if (!document.body) document.addEventListener('DOMContentLoaded', ld);
+    else ld();
+    return function (fontname, text, fontsize) {
+      d.textContent = text;
+      d.style.font = 'bold ' + fontsize + 'px ' + fontname;
+      return d.clientWidth + config.space;
     };
-    // 找一个能用的字体
-    var f = fontlist[fontlist.length - 1];
-    fontlist.some(function (font) {
-      if (validFont(font)) { f = font; return true; }
-      return false;
-    });
-    return f;
   };
-  config.font = fontChose(config.font);
-  return function (text, fontsize) {
-    context.font = 'bold ' + fontsize + 'px ' + config.font;
-    return Math.ceil(context.measureText(text).width + config.space);
-  };
+
+  // 检查使用哪个测量文字宽度的方法
+  if (config.use_canvas === null) {
+    if (navigator.platform.match(/linux/i) &&
+    !navigator.userAgent.match(/chrome/i)) config.use_canvas = false;
+  }
+  debug('use canvas: %o', config.use_canvas !== false);
+  if (config.use_canvas === false) return calcWidthDiv();
+  return calcWidthCanvas();
+
 }());
 
+// 选择合适的字体
+var choseFont = function (fontlist) {
+  // 检查这个字串的宽度来检查字体是否存在
+  var sampleText =
+    'The quick brown fox jumps over the lazy dog' +
+    '7531902468' + ',.!-' + '，。：！' +
+    '天地玄黄' + '則近道矣';
+  // 和这些字体进行比较
+  var sampleFont = [
+    'monospace', 'sans-serif', 'sans',
+    'Symbol', 'Arial', 'Comic Sans MS', 'Fixed', 'Terminal',
+    'Times', 'Times New Roman',
+    '宋体', '黑体', '文泉驿正黑', 'Microsoft YaHei'
+  ];
+  // 如果被检查的字体和基准字体可以渲染出不同的宽度
+  // 那么说明被检查的字体总是存在的
+  var diffFont = function (base, test) {
+    var baseSize = calcWidth(base, sampleText, 72);
+    var testSize = calcWidth(test + ',' + base, sampleText, 72);
+    return baseSize !== testSize;
+  };
+  var validFont = function (test) {
+    var valid = sampleFont.some(function (base) {
+      return diffFont(base, test);
+    });
+    debug('font %s: %o', test, valid);
+    return valid;
+  };
+  // 找一个能用的字体
+  var f = fontlist[fontlist.length - 1];
+  fontlist = fontlist.filter(validFont);
+  debug('fontlist: %o', fontlist);
+  return fontlist[0] || f;
+};
+
+// 从备选的字体中选择一个机器上提供了的字体
+var initFont = (function () {
+  var done = false;
+  return function () {
+    if (done) return; done = true;
+    calcWidth = calcWidth.bind(window,
+      config.font = choseFont(config.fontlist)
+    );
+  };
+}());
 
 var generateASS = function (danmaku, info) {
   var assHeader = fillStr(funStr(function () {/*! ASS弹幕文件文件头
@@ -232,14 +273,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 /*
 
 下文字母含义：
-
-0          _____________________c_____________________
+0       ||----------------------x---------------------->
+           _____________________c_____________________
 =        /                     wc                      \      0
 |       |                   |--v--|                 wv  |  |--v--|
 |    d  |--v--|               d f                 |--v--|
 y |--v--|  l                                         f  |  s    _ p
-|       |                    VIDEO                      |--v--| _ m
-v       |                    AREA                       |
+|       |              VIDEO           |--v--|          |--v--| _ m
+v       |              AREA            (x ^ y)          |
 
 v: 弹幕
 c: 屏幕
@@ -271,6 +312,7 @@ td := p + ts
 
 */
 
+// 滚动弹幕
 var normalDanmaku = (function (wc, hc, b, u, maxr) {
   return function () {
     // 初始化屏幕外面是不可用的
@@ -349,6 +391,7 @@ var normalDanmaku = (function (wc, hc, b, u, maxr) {
   };
 }(config.playResX, config.playResY, config.bottom, config.r2ltime, config.max_delay));
 
+// 顶部、底部弹幕
 var sideDanmaku = (function (hc, b, u, maxr) {
   return function () {
     var used = [
@@ -356,6 +399,7 @@ var sideDanmaku = (function (hc, b, u, maxr) {
       { 'p': hc, 'm': Infinity, 'td': Infinity, 'b': false },
       { 'p': hc - b, 'm': hc, 'td': Infinity, 'b': true },
     ];
+    // 查找可用的位置
     var fr = function (p, m, t0s, b) {
       var tas = t0s;
       used.forEach(function (j) {
@@ -366,6 +410,7 @@ var sideDanmaku = (function (hc, b, u, maxr) {
       });
       return { 'r': tas - t0s, 'p': p, 'm': m };
     };
+    // 顶部
     var top = function (hv, t0s, b) {
       var suggestion = [];
       used.forEach(function (i) {
@@ -374,6 +419,7 @@ var sideDanmaku = (function (hc, b, u, maxr) {
       });
       return suggestion;
     };
+    // 底部
     var bottom = function (hv, t0s, b) {
       var suggestion = [];
       used.forEach(function (i) {
@@ -388,6 +434,7 @@ var sideDanmaku = (function (hc, b, u, maxr) {
     var syn = function (t0s) {
       used = used.filter(function (i) { return i.td > t0s; });
     };
+    // 挑选最好的方案：延迟小的优先，位置不重要
     var score = function (i, is_top) {
       if (i.r > maxr) return -Infinity;
       var f = function (p) { return is_top ? p : (hc - p); };
@@ -448,7 +495,7 @@ var setPosition = function (danmaku) {
       };
     })
     .filter(function (l) { return l; })
-    .sort(function (x, y) { return x.ctime - y.ctime; });
+    .sort(function (x, y) { return x.stime - y.stime; });
 };
 
 /*
@@ -506,6 +553,7 @@ var mina = function (cid0) {
       var name;
       try { name = document.querySelector('.viewbox h2').textContent; }
       catch (e) { name = '' + cid; }
+      debug('got xml with %d danmaku', danmaku.length);
       var ass = generateASS(setPosition(danmaku), {
         'title': document.title,
         'ori': location.href,
@@ -517,15 +565,17 @@ var mina = function (cid0) {
 
 var showButton = function () {
   GM_addStyle('#assdown { display: block !important; }');
-  document.querySelector('#assdown').href = '#';
+  document.querySelector('#assdown').removeAttribute('href');
 };
 
 // 初始化按钮
 var initButton = (function () {
   var done = false;
   return function () {
+    debug('init button');
     if (!document.querySelector('#assdown')) return;
     getCid(function (cid) {
+      debug('cid = %o', cid);
       if (!cid || done) return; else done = true;
       showButton();
       document.querySelector('#assdown').addEventListener('click', function (e) {
@@ -536,7 +586,22 @@ var initButton = (function () {
   };
 }());
 
-window.addEventListener('DOMContentLoaded', initButton);
+/*
+ * Common
+ */
+
+ // 初始化
+var init = function () {
+  initFont();
+  initButton();
+};
+
+if (document.body) init();
+else window.addEventListener('DOMContentLoaded', init);
+
+/*
+ * Replace bilibili bofqi
+ */
 
 // 参数：第一个参数为对应的函数名（String，如"ping"、"getCid"）
 //      后面的若干个参数为传给这个函数的参数
@@ -545,4 +610,4 @@ var rbb = function () {
   unsafeWindow.replaceBilibiliBofqi.push(Array.apply(Array, arguments));
   return unsafeWindow.replaceBilibiliBofqi.constructor.name !== 'Array';
 };
-rbb('replaced', initButton);
+rbb('replaced', init);
