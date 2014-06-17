@@ -5,7 +5,7 @@
 // @include     http://www.acfun.com/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.2
+// @version     1.3
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -37,7 +37,7 @@ var config = {
   'max_delay': 6,            // 最多允许延迟几秒出现弹幕
   'bottom': 50,              // 底端给字幕保留的空间（像素）
   'use_canvas': null,        // 是否使用canvas计算文本宽度（布尔值，Linux下的火狐默认否，其他默认是，Firefox bug #561361）
-  'debug': false,            // 打印调试信息
+  'debug': true,            // 打印调试信息
 };
 
 var debug = config.debug ? console.log.bind(console) : function () { };
@@ -512,9 +512,15 @@ var addStyle = function () {
 
 // 获取弹幕id
 var getDanmakuId = function (callback) {
-  var player = document.querySelector('#ACFlashPlayer-re'); if (!player) return;
-  var m = player.src.match(/vid=(\d+)/); if (!m || !Number(m[1])) return;
-  var vid = Number(m[1]);
+  var player, m, vid = null;
+  try {
+    player = document.querySelector('#ACFlashPlayer-re');
+    m = player.src.match(/vid=(\d+)/);
+    vid = Number(m[1]);
+  } catch (e) { }
+  if (!vid) setTimeout(function () {
+    getDanmakuId(callback);
+  }, 1000);
   GM_xmlhttpRequest({
     'method': 'GET',
     'url': 'http://www.acfun.com/video/getVideo.aspx?id=' + vid,
@@ -600,7 +606,7 @@ var initButton = function () {
  * Common
  */
 
- // 初始化
+// 初始化
 var init = function () {
   initFont();
   initButton();
