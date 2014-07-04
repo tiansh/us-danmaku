@@ -7,10 +7,11 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.3
+// @version     1.4
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
+// @author      田生
 // @copyright   2014+, 田生
 // @license     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
 // ==/UserScript==
@@ -86,7 +87,7 @@ var startDownload = function (data, filename) {
   document.body.appendChild(saveas);
   saveas.download = filename;
   saveas.click();
-  setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 0)
+  setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 1000)
 };
 
 // 计算文字宽度
@@ -532,18 +533,26 @@ var fetchXML = function (cid, callback) {
 
 // 获取当前cid
 var getCid = function (callback) {
-  var cid = null;
+  var cid = null, src = null;
   try {
-    cid = Number(
-      document.querySelector('#bofqi iframe').src
-      .match(/cid=(\d+)/)[1]);
+    src = document.querySelector('#bofqi iframe').src.replace(/^.*\?/, '');
+    cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (!cid) try {
-    cid = Number(
-      document.querySelector('#bofqi embed').getAttribute('flashvars')
-      .match(/cid=(\d+)/)[1]);
+    src = document.querySelector('#bofqi embed').getAttribute('flashvars')
+    cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
-  setTimeout(function () { callback(cid || undefined); }, 0);
+  if (cid) setTimeout(callback, 0, cid);
+  else if (src) GM_xmlhttpRequest({
+    'method': 'GET',
+    'url': 'http://interface.bilibili.com/player?' + src,
+    'onload': function (resp) {
+      try { cid = Number(resp.responseText.match(/<chatid>(\d+)<\/chatid>/)[1]); }
+      catch (e) { }
+      setTimeout(callback, 0, cid || undefined);
+    },
+    'onerror': function () { setTimeout(callback, 0); }
+  }); else setTimeout(callback, 0);
 };
 
 // 下载的主程序
@@ -564,9 +573,12 @@ var mina = function (cid0) {
   });
 };
 
+// 显示出下载弹幕按钮
 var showButton = function () {
   GM_addStyle('#assdown { display: block !important; }');
-  document.querySelector('#assdown').removeAttribute('href');
+  var assdown = document.querySelector('#assdown');
+  assdown.removeAttribute('href');
+  assdown.parentNode.style.width = 'auto'; // 兼容助手
 };
 
 // 初始化按钮
