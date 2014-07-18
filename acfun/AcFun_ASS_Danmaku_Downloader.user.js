@@ -3,9 +3,10 @@
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 AcFun 的弹幕
 // @include     http://www.acfun.com/v/ac*
+// @include     http://www.acfun.tv/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.3
+// @version     1.4
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -514,7 +515,7 @@ var addStyle = function () {
 var getDanmakuId = function (callback) {
   var player, m, vid = null;
   try {
-    player = document.querySelector('#ACFlashPlayer-re');
+    player = document.querySelector('iframe#ACFlashPlayer-re');
     m = player.src.match(/vid=(\d+)/);
     vid = Number(m[1]);
   } catch (e) { }
@@ -523,7 +524,7 @@ var getDanmakuId = function (callback) {
   }, 1000);
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://www.acfun.com/video/getVideo.aspx?id=' + vid,
+    'url': 'http://www.acfun.tv/video/getVideo.aspx?id=' + vid,
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
@@ -539,7 +540,7 @@ var getDanmakuId = function (callback) {
 var getDanmaku = function (danmakuId, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://comment.acfun.com/' + danmakuId + '.json',
+    'url': 'http://comment.acfun.tv/' + danmakuId + '.json',
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
