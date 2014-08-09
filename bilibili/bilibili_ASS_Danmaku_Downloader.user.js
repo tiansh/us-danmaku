@@ -7,7 +7,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.4
+// @version     1.5
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -88,6 +88,7 @@ var startDownload = function (data, filename) {
   saveas.download = filename;
   saveas.click();
   setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 1000)
+  document.addEventListener('unload', function () { window.URL.revokeObjectURL(url); });
 };
 
 // 计算文字宽度
@@ -568,7 +569,7 @@ var mina = function (cid0) {
         'title': document.title,
         'ori': location.href,
       });
-      startDownload(ass, name + '.ass');
+      startDownload('\ufeff' + ass, name + '.ass');
     });
   });
 };

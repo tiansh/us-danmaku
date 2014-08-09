@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.4
+// @version     1.5
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -87,6 +87,7 @@ var startDownload = function (data, filename) {
   saveas.download = filename;
   saveas.click();
   setTimeout(function () { saveas.parentNode.removeChild(saveas); }, 0)
+  document.addEventListener('unload', function () { window.URL.revokeObjectURL(url); });
 };
 
 // 计算文字宽度
@@ -576,7 +577,7 @@ var mina = function (danmakuId, danmaku) {
     'title': document.title,
     'ori': location.href,
   });
-  startDownload(ass, name + '.ass');
+  startDownload('\ufeff' + ass, name + '.ass');
 };
 
 // 显示按钮
