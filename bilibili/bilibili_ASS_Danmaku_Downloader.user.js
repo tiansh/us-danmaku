@@ -7,13 +7,14 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.5
+// @version     1.6
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
 // @author      田生
 // @copyright   2014+, 田生
 // @license     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
+// @license     CC Attribution-ShareAlike 4.0 International; http://creativecommons.org/licenses/by-sa/4.0/
 // ==/UserScript==
 
 /*
@@ -576,7 +577,7 @@ var mina = function (cid0) {
 
 // 显示出下载弹幕按钮
 var showButton = function () {
-  GM_addStyle('#assdown { display: block !important; }');
+  GM_addStyle('#assdown { display: block !important; background-image: url("data:image/png;base64,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") !important; } #assdown:hover { background-position: 0 -50px !important; } .viewbox .sf a { margin-left: 0 !important; }');
   var assdown = document.querySelector('#assdown');
   assdown.removeAttribute('href');
   assdown.parentNode.style.width = 'auto'; // 兼容助手
