@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.6
+// @version     1.7
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -513,7 +513,7 @@ var addStyle = function () {
 };
 
 // 获取弹幕id
-var getDanmakuId = function (callback) {
+var getVid = function (callback) {
   var player, m, vid = null;
   try {
     player = document.querySelector('iframe#ACFlashPlayer-re');
@@ -521,42 +521,32 @@ var getDanmakuId = function (callback) {
     vid = Number(m[1]);
   } catch (e) { }
   if (!vid) setTimeout(function () {
-    getDanmakuId(callback);
-  }, 1000);
-  GM_xmlhttpRequest({
-    'method': 'GET',
-    'url': 'http://www.acfun.tv/video/getVideo.aspx?id=' + vid,
-    'onload': function (resp) {
-      var data = null;
-      try { data = JSON.parse(resp.responseText); }
-      catch (e) { data = null; }
-      if (!data.danmakuId) return;
-      callback(data.danmakuId);
-    }
-  });
+    getVid(callback);
+  }, 1000); else callback(vid);
 };
 
 // 通过弹幕id获取弹幕内容
 // 弹幕内容是A站直接提供的数据
-var getDanmaku = function (danmakuId, callback) {
+var getDanmaku = function (vid, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://comment.acfun.tv/' + danmakuId + '.json',
+    // FIXME 最后的500是瞎写的
+    'url': 'http://static.comment.acfun.mm111.net/' + vid + '-500',
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
       catch (e) { }
-      if (!data || typeof data.length === 'undefined') callback(danmakuId);
-      else callback(danmakuId, data);
+      if (!data || !data[2] || typeof data[2].length === 'undefined') callback(vid);
+      else callback(vid, data[2]);
     },
     'onerror': function () {
-      callback(getDanmakuId);
+      callback(getVid);
     },
   });
 };
 
 // 将弹幕内容转换为程序内部的表达方式
-var mina = function (danmakuId, danmaku) {
+var mina = function (vid, danmaku) {
   danmaku = danmaku.map(function (line) {
     var info = line.c.split(','), text = line.m;
     return {
@@ -572,7 +562,7 @@ var mina = function (danmakuId, danmaku) {
   });
   var name;
   try { name = document.querySelector('#txt-title-view').textContent; }
-  catch (e) { name = '' + danmakuId; }
+  catch (e) { name = '' + vid; }
   var ass = generateASS(setPosition(danmaku), {
     'title': document.title,
     'ori': location.href,
@@ -581,15 +571,15 @@ var mina = function (danmakuId, danmaku) {
 };
 
 // 显示按钮
-var showButton = function (danmakuId, danmaku) {
+var showButton = function (vid, danmaku) {
   if (!danmaku) return;
   var n = danmaku.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');;
   var d = document.createElement('div');
   d.innerHTML = ['<a id="btn-danmaku-view"><div class="img"></div><p>弹幕</p><span class="pts">' + n + '</span></a>'];
   d.firstChild.addEventListener('click', function (e) {
     e.preventDefault();
-    getDanmaku(danmakuId, function (danmakuId, danmaku0) {
-      mina(danmakuId, danmaku0 || danmaku);
+    getDanmaku(vid, function (vid, danmaku0) {
+      mina(vid, danmaku0 || danmaku);
     })
   });
   var r = document.querySelector('#area-title-view .r');
@@ -599,8 +589,8 @@ var showButton = function (danmakuId, danmaku) {
 // 初始化按钮
 var initButton = function () {
   addStyle();
-  getDanmakuId(function (danmakuId) {
-    getDanmaku(danmakuId, showButton);
+  getVid(function (vid) {
+    getDanmaku(vid, showButton);
   });
 };
 
