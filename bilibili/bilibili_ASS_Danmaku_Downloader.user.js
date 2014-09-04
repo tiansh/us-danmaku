@@ -7,7 +7,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.6
+// @version     1.7
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -577,10 +577,11 @@ var mina = function (cid0) {
 
 // 显示出下载弹幕按钮
 var showButton = function () {
-  GM_addStyle('#assdown { display: block !important; background-image: url("data:image/png;base64,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") !important; } #assdown:hover { background-position: 0 -50px !important; } .viewbox .sf a { margin-left: 0 !important; }');
-  var assdown = document.querySelector('#assdown');
-  assdown.removeAttribute('href');
-  assdown.parentNode.style.width = 'auto'; // 兼容助手
+  GM_addStyle('.assdown_box { border-left: 1px solid #ddd; border-right: medium none; float: right; padding: 0 20px; position: relative; height: 50px; line-height: 50px; } .arc-tool-bar .ass_btn { color: #222; display: inline-block; height: 100%; vertical-align: middle; } .arc-tool-bar .assdown_box .txt { display: inline-block; font-size: 14px; margin-left: 10px; text-align: center; vertical-align: middle; } .arc-tool-bar .ass_btn .icon { background-image: url("data:image/png;base64,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") !important; display: inline-block; height: 30px; width: 30px; vertical-align: middle; } .arc-tool-bar .ass_btn:hover .icon { background-position: 0 -30px !important; }');
+  var toolbar = document.querySelector('.arc-tool-bar');
+  var assdown = document.createElement('div');
+  assdown.innerHTML = '<div class="assdown_box"><a id="assdown" title="弹幕" class="ass_btn"><span class="icon"></span><span class="txt">弹幕下载</span></a></div>';
+  toolbar.appendChild(assdown.firstChild);
 };
 
 // 初始化按钮
@@ -588,7 +589,7 @@ var initButton = (function () {
   var done = false;
   return function () {
     debug('init button');
-    if (!document.querySelector('#assdown')) return;
+    if (!document.querySelector('.arc-tool-bar')) return;
     getCid(function (cid) {
       debug('cid = %o', cid);
       if (!cid || done) return; else done = true;
@@ -613,16 +614,4 @@ var init = function () {
 
 if (document.body) init();
 else window.addEventListener('DOMContentLoaded', init);
-
-/*
- * Replace bilibili bofqi
- */
-
-// 参数：第一个参数为对应的函数名（String，如"ping"、"getCid"）
-//      后面的若干个参数为传给这个函数的参数
-var rbb = function () {
-  if (!unsafeWindow.replaceBilibiliBofqi) unsafeWindow.replaceBilibiliBofqi = [];
-  unsafeWindow.replaceBilibiliBofqi.push(Array.apply(Array, arguments));
-  return unsafeWindow.replaceBilibiliBofqi.constructor.name !== 'Array';
-};
-rbb('replaced', init);
+window.addEventListener('hashchange', init);
