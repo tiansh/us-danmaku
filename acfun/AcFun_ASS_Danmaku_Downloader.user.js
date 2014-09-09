@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/ac*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.7
+// @version     1.8
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -530,8 +530,8 @@ var getVid = function (callback) {
 var getDanmaku = function (vid, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    // FIXME 最后的500是瞎写的
-    'url': 'http://static.comment.acfun.mm111.net/' + vid + '-500',
+    // FIXME 最后可能需要个弹幕上限，不过就先这样吧
+    'url': 'http://static.comment.acfun.mm111.net/' + vid,
     'onload': function (resp) {
       var data = null;
       try { data = JSON.parse(resp.responseText); }
