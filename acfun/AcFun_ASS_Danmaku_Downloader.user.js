@@ -1,12 +1,12 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        AcFun ASS Danmaku Downloader
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 AcFun 的弹幕
-// @include     http://www.acfun.com/v/ac*
-// @include     http://www.acfun.tv/v/ac*
+// @include     http://www.acfun.com/v/*
+// @include     http://www.acfun.tv/v/*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.8
+// @version     1.9
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -41,7 +41,7 @@ var config = {
   'debug': true,            // 打印调试信息
 };
 
-var debug = config.debug ? console.log.bind(console) : function () { };
+var debug = config.debug && console && console.log && console.log.bind(console) || function () { };
 
 // 将字典中的值填入字符串
 var fillStr = function (str) {
@@ -533,11 +533,13 @@ var getDanmaku = function (vid, callback) {
     // FIXME 最后可能需要个弹幕上限，不过就先这样吧
     'url': 'http://static.comment.acfun.mm111.net/' + vid,
     'onload': function (resp) {
-      var data = null;
-      try { data = JSON.parse(resp.responseText); }
-      catch (e) { }
-      if (!data || !data[2] || typeof data[2].length === 'undefined') callback(vid);
-      else callback(vid, data[2]);
+      var data;
+      try {
+        data = JSON.parse(resp.responseText);
+        data = data.reduce(function (x, y) { return x.concat(y); });
+      } catch (e) { data = null; }
+      if (!data || typeof data.length !== 'number') callback(vid);
+      else callback(vid, data);
     },
     'onerror': function () {
       callback(getVid);
