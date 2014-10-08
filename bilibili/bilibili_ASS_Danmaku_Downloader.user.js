@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        bilibili ASS Danmaku Downloader
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 bilibili 的弹幕
@@ -7,7 +7,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.7
+// @version     1.8
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -535,13 +535,18 @@ var fetchXML = function (cid, callback) {
 
 // 获取当前cid
 var getCid = function (callback) {
+  debug('get cid...');
   var cid = null, src = null;
   try {
     src = document.querySelector('#bofqi iframe').src.replace(/^.*\?/, '');
     cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (!cid) try {
-    src = document.querySelector('#bofqi embed').getAttribute('flashvars')
+    src = document.querySelector('#bofqi embed').getAttribute('flashvars');
+    cid = Number(src.match(/cid=(\d+)/)[1]);
+  } catch (e) { }
+  if (!cid) try {
+    src = document.querySelector('#bofqi object param[name="flashvars"]').getAttribute('value');
     cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (cid) setTimeout(callback, 0, cid);
@@ -554,7 +559,9 @@ var getCid = function (callback) {
       setTimeout(callback, 0, cid || undefined);
     },
     'onerror': function () { setTimeout(callback, 0); }
-  }); else setTimeout(callback, 0);
+  }); else {
+    setTimeout(getCid, 100, callback);
+  }
 };
 
 // 下载的主程序
@@ -614,4 +621,3 @@ var init = function () {
 
 if (document.body) init();
 else window.addEventListener('DOMContentLoaded', init);
-window.addEventListener('hashchange', init);
