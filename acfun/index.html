@@ -23,8 +23,9 @@
     #intro h2 { float: right; line-height: 45px; font-size: 36px; margin: 30px 30px 0 0; font-weight: bold; color: #0068b8; }
     #intro span { float: right; line-height: 30px; font-size: 20px; margin: 10px 30px 0 0; clear: both; color: #555; }
     #side-buttons { width: 100%; height: 260px; padding: 0; position: relative; }
-    #install { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; display: block; float: left; text-align: center; }
-    #install:hover { background-color: #48A2DF; border-color: #48A2DF; }
+    #install { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; display: block; float: left; text-align: center; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; }
+    #convert { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; display: block; float: left; text-align: center; font-size: 24px; line-height: 30px; padding: 10px 30px; width: 120px; margin: -35px 0 35px; }
+    #install:hover, #convert:hover { background-color: #48A2DF; border-color: #48A2DF; }
     #report { float: right; width: 400px; height: 70px; padding: 20px 30px 0; display: block; font-size: 16px; }
     #report1, #report2 { height: 80px; width: 48%; display: block; }
     #report1 { float: left; }
@@ -40,6 +41,33 @@
     .p { margin: 0.5em 0; }
     ul { margin: 0; }
   </style>
+  <script> var GM_xmlhttpRequest = GM_addStyle = function () { }; </script>
+  <script src="AcFun_ASS_Danmaku_Downloader.user.js"></script>
+  <script> var addStyle = getVid = getDanmaku = mina = showButton = initButton = init = function () { }; </script>
+  <script>
+    var parseFile = function (content) {
+      var data;
+      try {
+        data = JSON.parse(content);
+        data = data.reduce(function (x, y) { return x.concat(y); });
+      } catch (e) { data = null; }
+      if (!data || typeof data.length !== 'number') return null;
+      return data.map(function (line) {
+        var info = line.c.split(','), text = line.m;
+        return {
+          'text': text,
+          'time': Number(info[0]),
+          'color': RRGGBB(Number(info[1])),
+          'mode': [undefined, 'R2L', undefined, undefined, 'BOTTOM', 'TOP'][Number(info[2])],
+          'size': Number(info[3]),
+          'bottom': false,
+          // 'sender': String(info[4]),
+          // 'create': new Date(Number(info[5]) * 1000),
+        };
+      });
+    };
+    </script>
+    <script src="../page/common.js"></script>
 </head>
 <body>
   <div id="background">
@@ -56,6 +84,7 @@
         <span>兼容 libass 和 VSFilter 的 ASS 格式解析器</span>
       </div>
       <div id="side-buttons">
+        <label title="上传下载好的 JSON 文件在线转换"><span id="convert">在线转换</span><input id="upload" style="display:none" type="file" /></label>
         <a id="install" href="AcFun_ASS_Danmaku_Downloader.user.js">安装脚本</a>
         <div id="report">
           <div id="report1">
@@ -69,8 +98,13 @@
         </div>
       </div>
     </header>
+    
+    <h3>在线转换</h3>
+    <div class="in">
+      <div class="p">如果您手工下载了弹幕的 JSON 文件，您可以点击上方的在线转换按钮将 JSON 文件转换为 ASS 字幕文件。转换无需安装脚本或任何扩展。</div>
+    </div>
 
-    <h3>功能</h3>
+    <h3>脚本功能</h3>
     <div class="in">
       <div class="p">
         以 ASS 格式下载 AcFun 的弹幕。<br />
