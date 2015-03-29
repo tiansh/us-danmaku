@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        AcFun ASS Danmaku Downloader
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 AcFun 的弹幕
@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.9
+// @version     1.10
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -509,6 +509,7 @@ var addStyle = function () {
   GM_addStyle(funStr(function () {/*!
     #area-title-view .r #btn-danmaku-view .img { background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAABKCAMAAACfBMRMAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAECUExURUxpccvKys7Ozp+yPtTU1MzMzMzMzLi3ucHEvNTUzqOrRMjIyMvLysnJyc7OzszMzMzMzM3Nzby5W8vLyrm2Xru4YLu4YMvLy4+KLdDQ0IyFI83Nzc3NzcrKycvLy8zMzMzMzMzMzMzMzM3NzczMzM3Nzbq3V7m2V4QypouEIoyFI8rKyouEIouEIszMzMi7usvLy8zMzMWurc/Pz6GdTZuWSpaRP4uEIvDv2bu4WIuEIu3s0ry5W6GcO7y5WqyoR7OvUKeiQZmTNOrpzOzrz+noyczJgevqz8rIfczKgc/NieDfs8TBberpy+7t1M3LhMfFdsK/acTBcMXCcLu4Wb26XdtPStcAAAA4dFJOUwA4RhIHDhIBBQIrCx4ZJiMqcOJGTZLBDU0W4TFaVmpgdRR9gkqH/msEa74uk/sQcj9omi6SyumMu7+DfQAAAgJJREFUSMfNlFlzmzAUhQEDkry2duysjtOkdWxnT5MUqQXi7Fv39v//lSIBQlcIP2Z6XhjmG3SE7tGxLEX1waBumVXr00T9mgHhXZppF+tsqUuluksWNKNAinVqBpVZF2ZQ3Fo1g0qs6QJl8O4+UHR/B+DXAOgWwCB4KFb7EQQajOiXTPxNg5R+zmSEr/9lpJxMCT5JGn3X4DU8oWsAH29UdvMIoFj524N5KhzevpRGJof9HJWHvTAmiwNmIUTK0SQICUawu+zDUPvLLiZIQNdrdfZsuXbf3uu0PDeFuLHatnvD0ZFYe3A0Gvbs9moDc0iw11x3Nja3tndOu93Tne2tzQ1nvelhAuGHRBDKZU/eCp2Mho5cNt/Qcc95n8jpHdsfiw2JX2k1O+03Qu1OsyV/hR8Cdhveoe+/S+T7h16DI5RdUEQIwdjF9dmsnjxw8orUu40Qqu2z+Zzt1xBCeilMpgfhmNJxeDCd6GxlLbxMT+8yXFuBhTG7iouDj69mSmF8YnM4Mm4tzUqzHoeMWxdmUMKaxVV1ETOLVRdGDo2FkUNjYRTQUBgFNFxeFb7+l7Aw/kAIC+OvCvXC+K1CrTCefqkQFkb0M99QXFUYycjksLXCSHM2mTKeST0meUJ5misCJgqjFE1QGDDUpcI4Y+l1YGfGwjjnF+m8sjAuLv7vwvgHtqBLvPYBzOUAAAAASUVORK5CYII=); }
     #area-title-view .l { margin-right: -80px; }
+    #btn-danmaku-toolbar { border-left: 1px solid #eee; border-right: 1px solid #eee; color: #666; cursor: pointer; float: left; height: 18px; line-height: 18px; margin-left: -13px; margin-right: 12px; margin-top: 11px; padding: 0 12px; }
   */}));
 };
 
@@ -518,6 +519,11 @@ var getVid = function (callback) {
   try {
     player = document.querySelector('iframe#ACFlashPlayer-re');
     m = player.src.match(/vid=(\d+)/);
+    vid = Number(m[1]);
+  } catch (e) { }
+  if (!vid) try {
+    player = document.querySelector('object#ACFlashPlayer-re');
+    m = player.querySelector('param[name="flashvars"]').getAttribute('value').match(/videoId=(\d+)/);
     vid = Number(m[1]);
   } catch (e) { }
   if (!vid) setTimeout(function () {
@@ -575,17 +581,27 @@ var mina = function (vid, danmaku) {
 // 显示按钮
 var showButton = function (vid, danmaku) {
   if (!danmaku) return;
-  var n = danmaku.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');;
-  var d = document.createElement('div');
-  d.innerHTML = ['<a id="btn-danmaku-view"><div class="img"></div><p>弹幕</p><span class="pts">' + n + '</span></a>'];
-  d.firstChild.addEventListener('click', function (e) {
+  var click = function (e) {
     e.preventDefault();
     getDanmaku(vid, function (vid, danmaku0) {
       mina(vid, danmaku0 || danmaku);
-    })
-  });
-  var r = document.querySelector('#area-title-view .r');
-  r.insertBefore(d.firstChild, r.firstChild);
+    });
+  };
+  var n = danmaku.length.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');;
+  var r = document.querySelector('#area-title-view .r'), d;
+  if (r) {
+    d = document.createElement('div');
+    d.innerHTML = '<a id="btn-danmaku-view"><div class="img"></div><p>弹幕</p><span class="pts">' + n + '</span></a>';
+    d.firstChild.addEventListener('click', click);
+    r.insertBefore(d.firstChild, r.firstChild);
+  }
+  var t = document.querySelector('#area-toolbar-view .l #txt-info-title');
+  if (t) {
+    d = document.createElement('div');
+    d.innerHTML = '<div id="btn-danmaku-toolbar" class="a"><p>弹幕下载</p><span class="pts">'+n+'</span></div>';
+    d.firstChild.addEventListener('click', click);
+    t.parentNode.insertBefore(d.firstChild, t);
+  }
 };
 
 // 初始化按钮
