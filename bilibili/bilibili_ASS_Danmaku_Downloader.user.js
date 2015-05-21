@@ -7,7 +7,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.8
+// @version     1.9
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -570,7 +570,7 @@ var mina = function (cid0) {
     cid = cid || cid0;
     fetchXML(cid, function (danmaku) {
       var name;
-      try { name = document.querySelector('.viewbox h2').textContent; }
+      try { name = document.querySelector('.viewbox h1, .viewbox h2').textContent; }
       catch (e) { name = '' + cid; }
       debug('got xml with %d danmaku', danmaku.length);
       var ass = generateASS(setPosition(danmaku), {
