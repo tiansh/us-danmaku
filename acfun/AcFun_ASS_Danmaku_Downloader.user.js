@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.10
+// @version     1.11
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -595,12 +595,13 @@ var showButton = function (vid, danmaku) {
     d.firstChild.addEventListener('click', click);
     r.insertBefore(d.firstChild, r.firstChild);
   }
-  var t = document.querySelector('#area-toolbar-view .l #txt-info-title');
-  if (t) {
+  var l = document.querySelector('#area-toolbar-view .l');
+  if (l) {
+    var t = l.querySelector('#txt-info-title') || null;
     d = document.createElement('div');
     d.innerHTML = '<div id="btn-danmaku-toolbar" class="a"><p>弹幕下载</p><span class="pts">'+n+'</span></div>';
     d.firstChild.addEventListener('click', click);
-    t.parentNode.insertBefore(d.firstChild, t);
+    l.insertBefore(d.firstChild, t);
   }
 };
 
