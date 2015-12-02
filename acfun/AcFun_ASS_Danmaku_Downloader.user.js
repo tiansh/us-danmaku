@@ -6,7 +6,7 @@
 // @include     http://www.acfun.tv/v/*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
-// @version     1.12
+// @version     1.13
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -533,10 +533,10 @@ var getVid = function (callback) {
 
 // 通过弹幕id获取弹幕内容
 // 弹幕内容是A站直接提供的数据
-var getDanmaku = function (vid, callback) {
+var requestDanmaku = function (vid, page, callback) {
   GM_xmlhttpRequest({
     'method': 'GET',
-    'url': 'http://danmu.aixifan.com/V2/' + vid + '?pageSize=500&pageNo=1',
+    'url': 'http://danmu.aixifan.com/V2/' + vid + '?pageSize=500&pageNo=' + page,
     'onload': function (resp) {
       var data;
       try {
@@ -547,9 +547,21 @@ var getDanmaku = function (vid, callback) {
       else callback(vid, data);
     },
     'onerror': function () {
-      callback(getVid);
+      callback(vid);
     },
   });
+};
+var getDanmaku = function (vid, callback) {
+  var danmaku = [];
+  (function collectDanmaku(i) {
+    requestDanmaku(vid, i, function (vid, data) {
+      if (!data || !data.length) {
+        return callback(vid, danmaku);
+      }
+      danmaku = danmaku.concat(data);
+      collectDanmaku(i + 1);
+    });
+  }(1));
 };
 
 // 将弹幕内容转换为程序内部的表达方式
@@ -565,6 +577,7 @@ var mina = function (vid, danmaku) {
       'bottom': false,
       // 'sender': String(info[4]),
       // 'create': new Date(Number(info[5]) * 1000),
+      // 'danmakuid': info[6], // format as uuid
     };
   });
   var name;
@@ -601,7 +614,7 @@ var showButton = function (vid, danmaku) {
     d.innerHTML = '<div id="btn-danmaku-toolbar" class="a"><p>弹幕下载</p><span class="pts">'+n+'</span></div>';
     d.firstChild.addEventListener('click', click);
     l.insertBefore(d.firstChild, t);
-  }
+  } 
 };
 
 // 初始化按钮
