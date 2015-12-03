@@ -583,12 +583,22 @@ var mina = function (cid0) {
 };
 
 // 显示出下载弹幕按钮
-var showButton = function () {
-  GM_addStyle('.assdown_box { border-left: 1px solid #ddd; border-right: medium none; float: right; padding: 0 20px; position: relative; height: 50px; line-height: 50px; } .arc-tool-bar .ass_btn { color: #222; display: inline-block; height: 100%; vertical-align: middle; } .arc-tool-bar .assdown_box .txt { display: inline-block; font-size: 14px; margin-left: 10px; text-align: center; vertical-align: middle; } .arc-tool-bar .ass_btn .icon { background-image: url("data:image/png;base64,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") !important; display: inline-block; height: 30px; width: 30px; vertical-align: middle; } .arc-tool-bar .ass_btn:hover .icon { background-position: 0 -30px !important; }');
-  var toolbar = document.querySelector('.arc-tool-bar');
+var showButton = function (count) {
+  GM_addStyle('.arc-toolbar .block.fav { margin-right: 0 } .arc-toolbar .block { padding: 0 18px; }');
+  var favbar = document.querySelector('.arc-toolbar .block.fav');
   var assdown = document.createElement('div');
-  assdown.innerHTML = '<div class="assdown_box"><a id="assdown" title="弹幕" class="ass_btn"><span class="icon"></span><span class="txt">弹幕下载</span></a></div>';
-  toolbar.appendChild(assdown.firstChild);
+  assdown.innerHTML = '<div id="assdown" class="block ass"><span class="t ass_btn"><i style="display: block; width: 80px; height: 80px; background-position: 0px 0px; background-image: url(&quot;data:image/png;base64,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&quot;);" class="b-icon b-icon-a b-icon-anim-ass" title="弹幕下载"></i><div class="t-right"><span class="t-right-top">弹幕下载</span><span class="t-right-bottom">' + count + '</span></div></span></div>';
+  assdown = assdown.firstChild;
+  favbar.parentNode.insertBefore(assdown, favbar.nextSibling);
+  var timer = null, frame = 0;
+  assdown.addEventListener('mouseenter', function () { frame = 0; timer = setTimeout(anim, 0); });
+  assdown.addEventListener('mouseleave', function () { clearTimeout(timer); timer = null; });
+  var anim = function () {
+    if (frame === 16) { timer = null; return; }
+    frame++;
+    assdown.querySelector('i').style.backgroundPosition = '-' + (frame * 80) + 'px 0';
+    setTimeout(anim, 1000 / 16);
+  };
 };
 
 // 初始化按钮
@@ -596,14 +606,16 @@ var initButton = (function () {
   var done = false;
   return function () {
     debug('init button');
-    if (!document.querySelector('.arc-tool-bar')) return;
+    if (!document.querySelector('.arc-toolbar .block.fav')) return;
     getCid(function (cid) {
       debug('cid = %o', cid);
       if (!cid || done) return; else done = true;
-      showButton();
-      document.querySelector('#assdown').addEventListener('click', function (e) {
-        e.preventDefault();
-        mina(cid);
+      fetchXML(cid, function (danmaku) {
+        showButton(danmaku.length);
+        document.querySelector('#assdown').addEventListener('click', function (e) {
+          e.preventDefault();
+          mina(cid);
+        });
       });
     });
   };
