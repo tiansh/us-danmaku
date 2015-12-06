@@ -43,25 +43,10 @@
   <script src="bilibili_ASS_Danmaku_Downloader.user.js"></script>
   <script> var fetchXML = getCid = mina = showButton = initButton = init = function () { }; </script>
   <script>
-  var parseFile = function (content) {
-    var data = (new DOMParser()).parseFromString(content, 'text/xml');
-    var danmaku = Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
-      var info = line.getAttribute('p').split(','), text = line.textContent;
-      return {
-        'text': text,
-        'time': Number(info[0]),
-        'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
-        'size': Number(info[2]),
-        'color': RRGGBB(Number(info[3])),
-        'bottom': Number(info[5]) > 0,
-        // 'create': new Date(Number(info[4])),
-        // 'pool': Number(info[5]),
-        // 'sender': String(info[6]),
-        // 'dmid': Number(info[7]),
-      };
-    });
-    return danmaku;
-  };
+    var parseFile = function (content) {
+      content = content.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+      return parseXML(content);
+    }
   </script>
   <script src="../page/common.js"></script>
 </head>

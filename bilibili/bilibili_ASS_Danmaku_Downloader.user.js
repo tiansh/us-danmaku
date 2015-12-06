@@ -7,7 +7,7 @@
 // @include     http://bilibili.kankanews.com/video/av*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.9
+// @version     1.10
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -512,24 +512,34 @@ var fetchXML = function (cid, callback) {
     'method': 'GET',
     'url': 'http://comment.bilibili.com/{{cid}}.xml'.replace('{{cid}}', cid),
     'onload': function (resp) {
-      var data = (new DOMParser()).parseFromString(resp.responseText, 'text/xml');
-      var danmaku = Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
-        var info = line.getAttribute('p').split(','), text = line.textContent;
-        return {
-          'text': text,
-          'time': Number(info[0]),
-          'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
-          'size': Number(info[2]),
-          'color': RRGGBB(Number(info[3])),
-          'bottom': Number(info[5]) > 0,
-          // 'create': new Date(Number(info[4])),
-          // 'pool': Number(info[5]),
-          // 'sender': String(info[6]),
-          // 'dmid': Number(info[7]),
-        };
-      });
-      callback(danmaku);
+      var content = resp.responseText.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+      callback(content);
     }
+  });
+};
+
+var fetchDanmaku = function (cid, callback) {
+  fetchXML(cid, function (content) {
+    callback(parseXML(content));
+  });
+};
+
+var parseXML = function (content) {
+  var data = (new DOMParser()).parseFromString(content, 'text/xml');
+  return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
+    var info = line.getAttribute('p').split(','), text = line.textContent;
+    return {
+      'text': text,
+      'time': Number(info[0]),
+      'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
+      'size': Number(info[2]),
+      'color': RRGGBB(Number(info[3])),
+      'bottom': Number(info[5]) > 0,
+      // 'create': new Date(Number(info[4])),
+      // 'pool': Number(info[5]),
+      // 'sender': String(info[6]),
+      // 'dmid': Number(info[7]),
+    };
   });
 };
 
@@ -568,7 +578,7 @@ var getCid = function (callback) {
 var mina = function (cid0) {
   getCid(function (cid) {
     cid = cid || cid0;
-    fetchXML(cid, function (danmaku) {
+    fetchDanmaku(cid, function (danmaku) {
       var name;
       try { name = document.querySelector('.viewbox h1, .viewbox h2').textContent; }
       catch (e) { name = '' + cid; }
@@ -610,7 +620,7 @@ var initButton = (function () {
     getCid(function (cid) {
       debug('cid = %o', cid);
       if (!cid || done) return; else done = true;
-      fetchXML(cid, function (danmaku) {
+      fetchDanmaku(cid, function (danmaku) {
         showButton(danmaku.length);
         document.querySelector('#assdown').addEventListener('click', function (e) {
           e.preventDefault();
