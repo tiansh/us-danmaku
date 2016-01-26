@@ -3,11 +3,10 @@
 // @namespace   https://github.com/tiansh
 // @description 以 ASS 格式下载 bilibili 的弹幕
 // @include     http://www.bilibili.com/video/av*
-// @include     http://www.bilibili.tv/video/av*
-// @include     http://bilibili.kankanews.com/video/av*
+// @include     http://bangumi.bilibili.com/movie/*
 // @updateURL   https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/bilibili/bilibili_ASS_Danmaku_Downloader.user.js
-// @version     1.10
+// @version     1.11
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @run-at      document-start
@@ -15,6 +14,8 @@
 // @copyright   2014+, 田生
 // @license     Mozilla Public License 2.0; http://www.mozilla.org/MPL/2.0/
 // @license     CC Attribution-ShareAlike 4.0 International; http://creativecommons.org/licenses/by-sa/4.0/
+// @connect-src comment.bilibili.com
+// @connect-src interface.bilibili.com
 // ==/UserScript==
 
 /*
@@ -548,15 +549,15 @@ var getCid = function (callback) {
   debug('get cid...');
   var cid = null, src = null;
   try {
-    src = document.querySelector('#bofqi iframe').src.replace(/^.*\?/, '');
+    src = document.querySelector('#bofqi iframe, #moviebofqi iframe').src.replace(/^.*\?/, '');
     cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (!cid) try {
-    src = document.querySelector('#bofqi embed').getAttribute('flashvars');
+    src = document.querySelector('#bofqi embed, #moviebofqi embed').getAttribute('flashvars');
     cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (!cid) try {
-    src = document.querySelector('#bofqi object param[name="flashvars"]').getAttribute('value');
+    src = document.querySelector('#bofqi object param[name="flashvars"], #moviebofqi object param[name="flashvars"]').getAttribute('value');
     cid = Number(src.match(/cid=(\d+)/)[1]);
   } catch (e) { }
   if (cid) setTimeout(callback, 0, cid);
