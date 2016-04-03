@@ -4,6 +4,7 @@
 // @description 以 ASS 格式下载 AcFun 的弹幕
 // @include     http://www.acfun.com/v/*
 // @include     http://www.acfun.tv/v/*
+// @include     http://acfun.tudou.com/v/*
 // @updateURL   https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.meta.js
 // @downloadURL https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js
 // @version     1.13
