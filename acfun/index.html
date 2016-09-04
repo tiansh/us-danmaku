@@ -49,7 +49,7 @@
       var data;
       try {
         data = JSON.parse(content);
-        data = data.reduce(function (x, y) { return x.concat(y); });
+        data = data.reduce(function (x, y) { return x.concat(y); }, []);
       } catch (e) { data = null; }
       if (!data || typeof data.length !== 'number') return null;
       return data.map(function (line) {
@@ -104,7 +104,7 @@
       <iframe id="guide" width="800" height="0" style="border: none;" src="https://tiansh.github.io/us-guide/install.html#name=AcFun%20ASS%20Danmaku%20Downloader&installurl=https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js&description=%E4%BB%A5%20ASS%20%E6%A0%BC%E5%BC%8F%E4%B8%8B%E8%BD%BD%20AcFun%20%E7%9A%84%E5%BC%B9%E5%B9%95&compatible=firefox+greasemonkey&compatible=chrome+tampermonkey&&compatible=opera+violentmonkey&color=#d9e5ed,#000,#026b76,#efd387,#000"></iframe>
       <script>window.addEventListener('message', function (e) { if (e.origin === 'https://tiansh.github.io') try { guide.height = JSON.parse(e.data).installheight } catch (ex) { } }, false);</script>
     </div>
-    
+
     <h3>在线转换</h3>
     <div class="in">
       <div class="p">如果您手工下载了弹幕的 JSON 文件，您可以点击上方的在线转换按钮将 JSON 文件转换为 ASS 字幕文件。转换无需安装脚本或任何扩展。</div>
