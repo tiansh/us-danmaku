@@ -542,7 +542,7 @@ var requestDanmaku = function (vid, page, callback) {
       var data;
       try {
         data = JSON.parse(resp.responseText);
-        data = data.reduce(function (x, y) { return x.concat(y); });
+        data = data.reduce(function (x, y) { return x.concat(y); }, []);
       } catch (e) { data = null; }
       if (!data || typeof data.length !== 'number') callback(vid);
       else callback(vid, data);
@@ -615,7 +615,7 @@ var showButton = function (vid, danmaku) {
     d.innerHTML = '<div id="btn-danmaku-toolbar" class="a"><p>弹幕下载</p><span class="pts">'+n+'</span></div>';
     d.firstChild.addEventListener('click', click);
     l.insertBefore(d.firstChild, t);
-  } 
+  }
 };
 
 // 初始化按钮
