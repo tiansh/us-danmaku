@@ -513,7 +513,7 @@ var fetchXML = function (cid, callback) {
     'method': 'GET',
     'url': 'http://comment.bilibili.com/{{cid}}.xml'.replace('{{cid}}', cid),
     'onload': function (resp) {
-      var content = resp.responseText.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+      var content = resp.responseText.replace(/(?:[\0-\x08\x0B\f\x0E-\x1F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])/g, "");
       callback(content);
     }
   });
