@@ -526,7 +526,7 @@ var fetchDanmaku = function (cid, callback) {
 };
 
 var parseXML = function (content) {
-  var data = data = (new DOMParser()).parseFromString(content, 'text/xml');
+  var data = (new DOMParser()).parseFromString(content, 'text/xml');
   return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
     var info = line.getAttribute('p').split(','), text = line.textContent;
     return {
