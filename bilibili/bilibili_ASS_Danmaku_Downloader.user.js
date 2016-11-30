@@ -513,7 +513,7 @@ var fetchXML = function (cid, callback) {
     'method': 'GET',
     'url': 'http://comment.bilibili.com/{{cid}}.xml'.replace('{{cid}}', cid),
     'onload': function (resp) {
-      var content = resp.responseText.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
+      var content = resp.responseText.replace(/(?:[\0-\x08\x0B\f\x0E-\x1F\uFFFE\uFFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF])/g, "");
       callback(content);
     }
   });
@@ -525,21 +525,8 @@ var fetchDanmaku = function (cid, callback) {
   });
 };
 
-//parse Xml with invalid characters
-var parseXmlSafe = function parseXmlSafe(text) {
-    "use strict";
-    text = text.replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u10000-\u10FFFF]/g, "");
-    if (window.DOMParser) return new window.DOMParser().parseFromString(text, "text/xml");
-    else if (ActiveXObject) {
-        var activeXObject = new ActiveXObject("Microsoft.XMLDOM");
-        activeXObject.async = false;
-        activeXObject.loadXML(text);
-        return activeXObject;
-    } else throw new Error("parseXmlSafe: XML Parser Not Found.");
-};
-
 var parseXML = function (content) {
-  var data = parseXmlSafe(content);
+  var data = data = (new DOMParser()).parseFromString(content, 'text/xml');
   return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
     var info = line.getAttribute('p').split(','), text = line.textContent;
     return {
