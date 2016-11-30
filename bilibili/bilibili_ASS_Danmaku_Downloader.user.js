@@ -59,7 +59,7 @@ var fillStr = function (str) {
 // 将颜色的数值化为十六进制字符串表示
 var RRGGBB = function (color) {
   var t = Number(color).toString(16).toUpperCase();
-  return t.length > 6 ? t.substring(t.length - 6) : Array(7 - t.length).join('0') + t;
+  return (Array(7).join('0') + t).slice(-6);
 };
 
 // 将可见度转换为透明度
@@ -534,7 +534,7 @@ var parseXML = function (content) {
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
       'size': Number(info[2]),
-      'color': RRGGBB(Number(info[3])),
+      'color': RRGGBB(Number(info[3])) & 0xffffff,
       'bottom': Number(info[5]) > 0,
       // 'create': new Date(Number(info[4])),
       // 'pool': Number(info[5]),
