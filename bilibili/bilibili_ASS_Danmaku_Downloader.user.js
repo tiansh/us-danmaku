@@ -534,7 +534,7 @@ var parseXML = function (content) {
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
       'size': Number(info[2]),
-      'color': RRGGBB(Number(info[3])) & 0xffffff,
+      'color': RRGGBB(parseInt(info[3]) & 0xffffff),
       'bottom': Number(info[5]) > 0,
       // 'create': new Date(Number(info[4])),
       // 'pool': Number(info[5]),
