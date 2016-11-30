@@ -59,7 +59,7 @@ var fillStr = function (str) {
 // 将颜色的数值化为十六进制字符串表示
 var RRGGBB = function (color) {
   var t = Number(color).toString(16).toUpperCase();
-  return Array(7 - t.length).join('0') + t;
+  return t.length > 6 ? t.substring(t.length - 6) : Array(7 - t.length).join('0') + t;
 };
 
 // 将可见度转换为透明度
