@@ -525,8 +525,21 @@ var fetchDanmaku = function (cid, callback) {
   });
 };
 
+//parse Xml with invalid characters
+var parseXmlSafe = function parseXmlSafe(text) {
+    "use strict";
+    text = text.replace(/[^\x09\x0A\x0D\x20-\uD7FF\uE000-\uFFFD\u10000-\u10FFFF]/g, "");
+    if (window.DOMParser) return new window.DOMParser().parseFromString(text, "text/xml");
+    else if (ActiveXObject) {
+        var activeXObject = new ActiveXObject("Microsoft.XMLDOM");
+        activeXObject.async = false;
+        activeXObject.loadXML(text);
+        return activeXObject;
+    } else throw new Error("parseXmlSafe: XML Parser Not Found.");
+};
+
 var parseXML = function (content) {
-  var data = (new DOMParser()).parseFromString(content, 'text/xml');
+  var data = parseXmlSafe(content);
   return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
     var info = line.getAttribute('p').split(','), text = line.textContent;
     return {
