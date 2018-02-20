@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1" />
-  <title>AcFun ASS Danmaku Downloader</title>
+  <title>AcFun ASS 弹幕在线转换</title>
   <meta name="keywords" content="AcFun, 爱稀饭, 弹幕, danmaku, 下载" />
   <meta name="description" content="AcFun ASS Danmaku Downloader，以 ASS 格式下载 AcFun 的弹幕" />
   <style>
@@ -23,9 +23,8 @@
     #intro h2 { float: right; line-height: 45px; font-size: 36px; margin: 30px 30px 0 0; font-weight: bold; color: #0068b8; }
     #intro span { float: right; line-height: 30px; font-size: 20px; margin: 10px 30px 0 0; clear: both; color: #555; }
     #side-buttons { width: 100%; height: 260px; padding: 0; position: relative; }
-    #install { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; display: block; float: left; text-align: center; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; }
-    #convert { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; display: block; float: left; text-align: center; font-size: 24px; line-height: 30px; padding: 10px 30px; width: 120px; margin: -35px 0 35px; }
-    #install:hover, #convert:hover { background-color: #48A2DF; border-color: #48A2DF; }
+    #convert { background-color: #3498DB; border: 1px solid #3498DB; color: #FFFFFF; display: block; float: left; text-align: center; font-size: 32px; line-height: 50px; padding: 10px 50px; width: 300px; clear: both; }
+    #convert:hover { background-color: #48A2DF; border-color: #48A2DF; }
     #report { float: right; width: 400px; height: 70px; padding: 20px 30px 0; display: block; font-size: 16px; }
     #report1, #report2 { height: 80px; width: 48%; display: block; }
     #report1 { float: left; }
@@ -40,6 +39,8 @@
     .in { padding: 5px 2em; border: 4px; }
     .p { margin: 0.5em 0; }
     ul { margin: 0; }
+    .addon { display: block; height: 80px; line-height: 80px; font-size: 24px; background: black; text-align: center; color: white; display: none; }
+    .addon a { color: #efd387; text-decoration: underline; }
   </style>
   <script> var GM_xmlhttpRequest = GM_addStyle = function () { }; </script>
   <script src="AcFun_ASS_Danmaku_Downloader.user.js"></script>
@@ -70,13 +71,16 @@
     <script src="../page/common.js"></script>
 </head>
 <body>
+  <div class="addon">
+    Firefox 用户可以<a href="https://addons.mozilla.org/en-US/firefox/addon/ass-danmaku/">安装附加组件版</a>方便下载弹幕
+  </div>
   <div id="background">
     <div id="title_bg"></div>
     <div id="head_bg"></div>
   </div>
   <div id="main-body">
 
-    <h1><span>AcFun</span> ASS Danmaku Downloader</h1>
+    <h1><span>AcFun</span> ASS 弹幕在线转换</h1>
 
     <header>
       <div id="intro">
@@ -85,69 +89,20 @@
       </div>
       <div id="side-buttons">
         <label title="上传下载好的 JSON 文件在线转换"><span id="convert">在线转换</span><input id="upload" style="display:none" type="file" /></label>
-        <a id="install" href="AcFun_ASS_Danmaku_Downloader.user.js">安装脚本</a>
-        <div id="report">
-          <div id="report1">
-            <a href="https://github.com/tiansh/us-danmaku/issues" target="_blank">报告Bug</a>
-            <span>在github上报告错误</span>
-          </div>
-          <div id="report2">
-            <a href="http://www.acfun.com/member/#area=mail-new;username=tsh" target="_blank">私信我</a>
-            <span>在AcFun上私信作者</span>
-          </div>
-        </div>
       </div>
     </header>
-
-    <h3>安装教程</h3>
-    <div class="in">
-      <iframe id="guide" width="800" height="0" style="border: none;" src="https://tiansh.github.io/us-guide/install.html#name=AcFun%20ASS%20Danmaku%20Downloader&installurl=https://tiansh.github.io/us-danmaku/acfun/AcFun_ASS_Danmaku_Downloader.user.js&description=%E4%BB%A5%20ASS%20%E6%A0%BC%E5%BC%8F%E4%B8%8B%E8%BD%BD%20AcFun%20%E7%9A%84%E5%BC%B9%E5%B9%95&compatible=firefox+greasemonkey&compatible=chrome+tampermonkey&&compatible=opera+violentmonkey&color=#d9e5ed,#000,#026b76,#efd387,#000"></iframe>
-      <script>window.addEventListener('message', function (e) { if (e.origin === 'https://tiansh.github.io') try { guide.height = JSON.parse(e.data).installheight } catch (ex) { } }, false);</script>
-    </div>
 
     <h3>在线转换</h3>
     <div class="in">
       <div class="p">如果您手工下载了弹幕的 JSON 文件，您可以点击上方的在线转换按钮将 JSON 文件转换为 ASS 字幕文件。转换无需安装脚本或任何扩展。</div>
     </div>
 
-    <h3>脚本功能</h3>
-    <div class="in">
-      <div class="p">
-        以 ASS 格式下载 AcFun 的弹幕。<br />
-        脚本会在视频页面的收藏按钮左面添加一个弹幕下载的按钮，点击即可下载当前视频的弹幕。<br />
-        注意，如果您的机器配置较差，在弹幕较多的时候下载和转换可能会导致浏览器暂时的无响应，一般等待几秒即可。
-      </div>
-      <div class="p">
-        效果截图：<br />
-        <figure>
-          <img itemprop="screenshot" alt="ac170708在第47.2秒的带弹幕截图" src="ac170708-47174.png" width="512" height="384" />
-          <figcaption>ac170708在第47.2秒的带弹幕截图</figcaption>
-        </figure>
-      </div>
-    </div>
-
-    <h3>视频播放器兼容性</h3>
-    <div class="in">
-      <div class="p">
-        兼容使用了 libass 或 VSFilter 的播放器。<br />
-        如果在您那里出现弹幕显示不正常的情况，请<a href="https://github.com/tiansh/us-danmaku/issues">报告错误</a>时注明您使用的播放器和相关配置。
-      </div>
-    </div>
-
-    <h3>权限与隐私</h3>
-    <div class="in">
-      <div class="p">
-        脚本使用了 GM_addStyle 接口用于添加样式显示下载弹幕的按钮。<br />
-        脚本使用了 GM_xmlhttpRequest 接口用于获取弹幕信息。（如果获取失败当前可能下载到空弹幕）<br />
-        脚本暂没有本地存储，也不会访问其他地址。后续版本可能会添加本地存储，到时再说。
-      </div>
-    </div>
-
     <h3>相关脚本</h3>
     <div class="in">
-      <div class="p">bilibili的弹幕下载请参考：<a href="../bilibili/">bilibili ASS Danmaku Downloader</a></div>
+      <div class="p">bilibili的弹幕下载请参考：<a href="../bilibili/">bilibili ASS 弹幕在线转换</a></div>
     </div>
 
   </div>
+
 </body>
 </html>

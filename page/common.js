@@ -20,3 +20,10 @@ window.addEventListener('load', function () {
     upload.value = '';
   });
 });
+
+
+if (navigator.userAgent.match(/^Mozilla\/5.0 \([^)]+; rv:[\d.]+\) Gecko\/[\d]{8} Firefox\/[\d.]+$/)) {
+  const style = document.createElement('style');
+  style.innerHTML = '.addon { display: block; }';
+  document.documentElement.appendChild(style);
+}
