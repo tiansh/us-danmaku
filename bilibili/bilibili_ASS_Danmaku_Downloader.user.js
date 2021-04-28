@@ -79,6 +79,14 @@ var hypot = Math.hypot ? Math.hypot.bind(Math) : function () {
     .reduce(function (x, y) { return x + y * y; }));
 };
 
+var decodeHTML = function (s) {
+  return s.replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&');
+}
+
 // 创建下载
 var startDownload = function (data, filename) {
   var blob = new Blob([data], { type: 'application/octet-stream' });
@@ -533,7 +541,7 @@ var parseXML = function (content) {
     var parts = line.split('">');
     var info = parts[0].split(',')
     return {
-      'text': parts[1].split('<')[0],
+      'text': decodeHTML(parts[1].split('<')[0]),
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
       'size': Math.round(Number(info[2]) * config.font_size),
