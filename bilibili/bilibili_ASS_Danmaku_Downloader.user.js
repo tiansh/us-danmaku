@@ -124,6 +124,7 @@ var calcWidth = (function () {
   };
 
   // 检查使用哪个测量文字宽度的方法
+  if (typeof document == 'undefined') return undefined;
   if (config.use_canvas === null) {
     if (navigator.platform.match(/linux/i) &&
     !navigator.userAgent.match(/chrome/i)) config.use_canvas = false;
@@ -526,11 +527,13 @@ var fetchDanmaku = function (cid, callback) {
 };
 
 var parseXML = function (content) {
-  var data = (new DOMParser()).parseFromString(content, 'text/xml');
-  return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
-    var info = line.getAttribute('p').split(','), text = line.textContent;
+  var lines = content.split('<d p="');
+  lines.shift();
+  return lines.map(function (line) {
+    var parts = line.split('">');
+    var info = parts[0].split(',')
     return {
-      'text': text,
+      'text': parts[1].split('<')[0],
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
       'size': Number(info[2]),
@@ -642,5 +645,7 @@ var init = function () {
   initButton();
 };
 
-if (document.body) init();
-else window.addEventListener('DOMContentLoaded', init);
+if (typeof document !== 'undefined') {
+  if (document.body) init();
+  else window.addEventListener('DOMContentLoaded', init);
+}
