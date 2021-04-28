@@ -466,7 +466,7 @@ var setPosition = function (danmaku) {
   return danmaku
     .sort(function (x, y) { return x.time - y.time; })
     .map(function (line) {
-      var font_size = Math.round(line.size * config.font_size);
+      var font_size = line.size
       var width = calcWidth(line.text, font_size);
       switch (line.mode) {
         case 'R2L': return (function () {
@@ -536,7 +536,7 @@ var parseXML = function (content) {
       'text': parts[1].split('<')[0],
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
-      'size': Number(info[2]),
+      'size': Math.round(Number(info[2]) * config.font_size),
       'color': RRGGBB(parseInt(info[3], 10) & 0xffffff),
       'bottom': Number(info[5]) > 0,
       // 'create': new Date(Number(info[4])),
