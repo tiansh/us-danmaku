@@ -79,6 +79,14 @@ var hypot = Math.hypot ? Math.hypot.bind(Math) : function () {
     .reduce(function (x, y) { return x + y * y; }));
 };
 
+var decodeHTML = function (s) {
+  return s.replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, '>')
+    .replace(/&lt;/g, '<')
+    .replace(/&amp;/g, '&');
+}
+
 // 创建下载
 var startDownload = function (data, filename) {
   var blob = new Blob([data], { type: 'application/octet-stream' });
@@ -124,6 +132,7 @@ var calcWidth = (function () {
   };
 
   // 检查使用哪个测量文字宽度的方法
+  if (typeof document == 'undefined') return undefined;
   if (config.use_canvas === null) {
     if (navigator.platform.match(/linux/i) &&
     !navigator.userAgent.match(/chrome/i)) config.use_canvas = false;
@@ -465,7 +474,7 @@ var setPosition = function (danmaku) {
   return danmaku
     .sort(function (x, y) { return x.time - y.time; })
     .map(function (line) {
-      var font_size = Math.round(line.size * config.font_size);
+      var font_size = line.size
       var width = calcWidth(line.text, font_size);
       switch (line.mode) {
         case 'R2L': return (function () {
@@ -526,14 +535,16 @@ var fetchDanmaku = function (cid, callback) {
 };
 
 var parseXML = function (content) {
-  var data = (new DOMParser()).parseFromString(content, 'text/xml');
-  return Array.apply(Array, data.querySelectorAll('d')).map(function (line) {
-    var info = line.getAttribute('p').split(','), text = line.textContent;
+  var lines = content.split('<d p="');
+  lines.shift();
+  return lines.map(function (line) {
+    var parts = line.split('">');
+    var info = parts[0].split(',')
     return {
-      'text': text,
+      'text': decodeHTML(parts[1].split('<')[0]),
       'time': Number(info[0]),
       'mode': [undefined, 'R2L', 'R2L', 'R2L', 'BOTTOM', 'TOP'][Number(info[1])],
-      'size': Number(info[2]),
+      'size': Math.round(Number(info[2]) * config.font_size),
       'color': RRGGBB(parseInt(info[3], 10) & 0xffffff),
       'bottom': Number(info[5]) > 0,
       // 'create': new Date(Number(info[4])),
@@ -642,5 +653,7 @@ var init = function () {
   initButton();
 };
 
-if (document.body) init();
-else window.addEventListener('DOMContentLoaded', init);
+if (typeof document !== 'undefined') {
+  if (document.body) init();
+  else window.addEventListener('DOMContentLoaded', init);
+}
